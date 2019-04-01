@@ -1,2 +1,4 @@
 /build
-/.vscode
+/.vscode/ipch
+/.vscode/settings.json
+/.vscode/arduino.json

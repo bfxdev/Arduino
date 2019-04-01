@@ -468,3 +468,56 @@ In particular, if you are using the Gamebuino-prepared portable version of the A
 Finally, don't forget to leave some time to the IntelliSense engine to parse the header files (check the changing icon on the bottom-right).
 
 That's all folks!
+
+
+
+
+
+
+
+Here are some tips for macOS (lower-case m!):
+
+Complete reset of the IntelliSense Database
+
+IntelliSense user databases are located in ~/Library/Application Support/Code/User/workspaceStorage:
+
+$ tree -a ~/Library/Application\ Support/Code/User/workspaceStorage
+/Users/steph/Library/Application Support/Code/User/workspaceStorage
+└── 82a2b96a83f9401ecbc0e7e3f177d858
+    ├── ms-vscode.cpptools
+    │   ├── .browse.VC.db
+    │   ├── .browse.VC.db-shm
+    │   └── .browse.VC.db-wal
+    ├── state.vscdb
+    └── workspace.json
+And the local sketch database is actually located in .vscode/ipch:
+
+$ tree -a sketchname
+sketchname
+├── .vscode
+│   ├── arduino.json
+│   ├── c_cpp_properties.json
+│   ├── ipch
+│   │   └── c7e9a5004e7d31e0
+│   │       ├── sketch.ipch
+│   │       └── mmap_address.bin
+│   └── settings.json
+└── sketchname.ino
+c_cpp_properties.json configuration file
+
+The environment variable that designates the user space is not USERPROFILE, but HOME :
+
+"env": {
+        "PACKAGES_PATH":   "${env:HOME}/Library/Arduino15/packages",
+        "SKETCHBOOK_PATH": "${env:HOME}/Arduino"
+}
+... and I guess it must be the same for Linux!
+
+
+
+Thanks again for this tutorial which is really very useful!
+
+
+
+
+
