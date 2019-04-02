@@ -183,12 +183,15 @@ It is possible to reset the IntelliSense engine database by executing `C/C++: Re
 
 It seems to be a good idea after changing the configuration, but according to the logs, this is no complete reset (at least the compiler will not be searched/queried again).
 
-Under Windows, depending on the version of the C/C++ extension, the IntelliSense database may be located at:
+The IntelliSense database is stored in two parts. The user-related part of the database is located in a folder named as a random alphanumeric string, containing a sub-folder `ms-vscode.cpptools` where the IntelliSense database is stored as `.BROWSE.VC.DB` or `.browse.VC.db`. This folder is located at:
 
-- New folder created in `C:\Users\[UserName]\AppData\Roaming\Code\User\workspaceStorage` for any open project folder or sketch, containing a sub-folder `ms-vscode.cpptools` where the IntelliSense database is stored as `.BROWSE.VC.DB`.
-- `.vscode/ipch` folder of the current sketch
+- `C:\Users\[UserName]\AppData\Roaming\Code\User\workspaceStorage` on Windows
+- `/Users/[UserName]/Library/Application Support/Code/User/workspaceStorage` on macOS
+- `/home/[UserName]/.config/Code/User/workspaceStorage` on Linux
 
-It is possible to close the related VSCode project, identify the related folder (not so easy, e.g. by looking at the file modification dates), remove the database file and restart VSCode. After such an action, logs show the complete procedure including compiler detection and so on.
+The sketch-related part of the database is located in the `.vscode/ipch` folder of the current sketch.
+
+It is possible to close the related VSCode project, identify the related folders (not so easy, e.g. by looking at the file modification dates), remove the database files and restart VSCode. After such an action, logs show the complete procedure including compiler detection and so on.
 
 It should be possible to perform the same kind of action under MacOS and Linux (please let me know where the files are stored, such that I can add it in the tutorial).
 
@@ -209,12 +212,14 @@ ATTENTION: the file can be changed without any notice when adding a new library 
 
 ### Building the c_cpp_properties.json file
 
-To make the file more generic, we will use variable substitution as described in the [VSCode variables reference](https://code.visualstudio.com/docs/editor/variables-reference). We will use:
+To make the file more generic, we will use variable substitution as described in the [VSCode variables reference](https://code.visualstudio.com/docs/editor/variables-reference). We will use the following constructs in the tutorial:
 
+- `${config:arduino.path}`: path to the Arduino IDE folder, as set in the user preferences
 - `${env:USERPROFILE}`: path to the user's home directory on Windows
+- `${env:HOME}`: path to the user's home directory on macOS and Linux
 - `${workspaceFolder}`: folder opened in VSCode (so it is important to always open the folder of the sketch)
 
-To build the file, a basic understanding of the Arduino IDE structure is necessary. In particular, it is important to know the location of the include folders and know that the file `Arduino.h` is added at the beginning of the main `.ino` file. Please refer to [my other tutorial on the Arduino IDE](https://gamebuino.com/index.php/creations/understanding-the-arduino-ide) for more details.
+To build the file, a basic understanding of the Arduino IDE structure is necessary. In particular, it is important to know the location of the include folders and know that the file `Arduino.h` is added at the beginning of the main `.ino` file. Please refer to [my other tutorial on the Arduino files and folders](https://gamebuino.com/index.php/creations/understanding-the-arduino-ide) for more details.
 
 This is a first implementation of the file for Windows **using the Tag Parser** (not the Default engine so there is no `includePath`), and assuming that the sketchbook is at its default location (`Arduino` folder in user's home folder). **Edit the lines in the `env` block to adapt to your setup** if necessary:
 
@@ -411,11 +416,19 @@ Nevertheless, the **slowness seems to be linked to the size of the source code**
 
 If it was Too Long and you Didn't Read, this is the final version of the `c_cpp_properties.json` file!
 
-At this point, we assume that the Default IntelliSense engine is configured, the path to the Arduino IDE is set in the user preferences, the board is setup for compilation and the sketch is initialized (i.e. `arduino.json` exists).
+At this point, we assume that the Default IntelliSense engine is configured, the path to the Arduino IDE is set in the user preferences, the board is set up for compilation and the sketch is initialized (i.e. `arduino.json` exists).
 
 Copy the file below for Windows into your `.vscode` folder as `c_cpp_properties.json` (or replace its content if the file already exists). Adapt the values of `PACKAGES_PATH` and `SKETCHBOOK_PATH` to other locations if necessary.
 
-In particular, if you are using the Gamebuino-prepared portable version of the Arduino IDE, use: `"PACKAGES_PATH": "${config:arduino.path}/portable/packages"` and `"SKETCHBOOK_PATH": "${config:arduino.path}/portable/sketchbook"`.
+In particular, if you are using the Gamebuino-prepared portable version of the Arduino IDE, use:
+
+- `"PACKAGES_PATH": "${config:arduino.path}/portable/packages",`
+- `"SKETCHBOOK_PATH": "${config:arduino.path}/portable/sketchbook"`
+
+On macOS, use:
+
+- `"PACKAGES_PATH": "${env:HOME}/Library/Arduino15/packages",`
+- `"SKETCHBOOK_PATH": "${env:HOME}/Arduino"`
 
 ```json
 {
@@ -468,56 +481,3 @@ In particular, if you are using the Gamebuino-prepared portable version of the A
 Finally, don't forget to leave some time to the IntelliSense engine to parse the header files (check the changing icon on the bottom-right).
 
 That's all folks!
-
-
-
-
-
-
-
-Here are some tips for macOS (lower-case m!):
-
-Complete reset of the IntelliSense Database
-
-IntelliSense user databases are located in ~/Library/Application Support/Code/User/workspaceStorage:
-
-$ tree -a ~/Library/Application\ Support/Code/User/workspaceStorage
-/Users/steph/Library/Application Support/Code/User/workspaceStorage
-└── 82a2b96a83f9401ecbc0e7e3f177d858
-    ├── ms-vscode.cpptools
-    │   ├── .browse.VC.db
-    │   ├── .browse.VC.db-shm
-    │   └── .browse.VC.db-wal
-    ├── state.vscdb
-    └── workspace.json
-And the local sketch database is actually located in .vscode/ipch:
-
-$ tree -a sketchname
-sketchname
-├── .vscode
-│   ├── arduino.json
-│   ├── c_cpp_properties.json
-│   ├── ipch
-│   │   └── c7e9a5004e7d31e0
-│   │       ├── sketch.ipch
-│   │       └── mmap_address.bin
-│   └── settings.json
-└── sketchname.ino
-c_cpp_properties.json configuration file
-
-The environment variable that designates the user space is not USERPROFILE, but HOME :
-
-"env": {
-        "PACKAGES_PATH":   "${env:HOME}/Library/Arduino15/packages",
-        "SKETCHBOOK_PATH": "${env:HOME}/Arduino"
-}
-... and I guess it must be the same for Linux!
-
-
-
-Thanks again for this tutorial which is really very useful!
-
-
-
-
-
