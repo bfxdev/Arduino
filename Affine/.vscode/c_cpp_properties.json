@@ -3,11 +3,14 @@
         "WIN32_PACKAGES_PATH":      "${env:USERPROFILE}/AppData/Local/Arduino15/packages",
         "WIN32_SKETCHBOOK_PATH":    "${env:USERPROFILE}/Documents/Arduino",
 
-        "PORTABLE_PACKAGES_PATH":   "${config:arduino.path}/portable/packages",
-        "PORTABLE_SKETCHBOOK_PATH": "${config:arduino.path}/portable/sketchbook",
-
         "MAC_PACKAGES_PATH":        "${env:HOME}/Library/Arduino15/packages",
-        "MAC_SKETCHBOOK_PATH":      "${env:HOME}/Arduino"
+        "MAC_SKETCHBOOK_PATH":      "${env:HOME}/Arduino",
+
+        "LINUX_PACKAGES_PATH":      "${env:HOME}/.arduino15/packages",
+        "LINUX_SKETCHBOOK_PATH":    "${env:HOME}/Arduino",
+
+        "PORTABLE_PACKAGES_PATH":   "${config:arduino.path}/portable/packages",
+        "PORTABLE_SKETCHBOOK_PATH": "${config:arduino.path}/portable/sketchbook"
     },
 
     "configurations": [
@@ -85,15 +88,6 @@
               "${env:PORTABLE_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src/Gamebuino-Meta.h"
           ]
       },
-
-
-
-
-
-
-
-
-
 
 
         {
