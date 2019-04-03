@@ -64,7 +64,7 @@ The `Arduino15` folder, even if normally hidden, may look familiar to you becaus
 Concatenated with the possible locations of its parent folder, the `packages` folder, that we will call unsurprisingly `PACKAGES_PATH`, should be located at:
 
 - `C:\Users\[UserName]\AppData\Local\Arduino15\packages` on Windows
-- `~/Library/Arduino15/packages` on Mac OS
+- `~/Library/Arduino15/packages` on macOS
 - `~/.arduino15/packages` on Linux
 - `ARDUINO_IDE_PATH/portable/packages` for a portable installation
 

@@ -23,9 +23,7 @@ Here is a list of the software versions used for this tutorial. If anything chan
 - Arduino extension `vsciot-vscode.vscode-arduino` 0.2.25
 - Arduino SAMD Board (32-bits ARM Cortex-M0+) version 1.6.20
 - Gamebuino META Board version 1.2.1
-- Gamebuino Library version 1.3.1
-
-Please feel free to **give me some hints how it works under MacOS**, such that I can integrate the info in the tutorial.
+- Gamebuino Library version 1.3.2
 
 ## Setup VSCode for sketch compilation and upload
 
@@ -35,7 +33,7 @@ The next sections below are similar to the [existing tutorial in french](https:/
 
 Before even thinking of using VSCode, we need a working Arduino IDE. We need it for the compiler/linker tools, not for the editor. So make sure that the Arduino IDE is properly installed (if you can upload a sketch to the Gamebuino then it should be OK).
 
-Now you need to **determine the installation folder of the Arduino IDE**. This folder is usually `C:\Program Files (x86)\Arduino` for a standard Windows installation or `/Applications/Arduino.app` under MacOS. It is a user-created folder in case of portable installation (like the Gamebuino pre-cooked IDE) or installation in a user-defined folder. This is the folder where you can find the `arduino-builder` (named `arduino-builder.exe` if your OS is Windows). Please refer to [my other tutorial on the Arduino IDE](https://gamebuino.com/index.php/creations/understanding-the-arduino-ide) for more details.
+Now you need to **determine the installation folder of the Arduino IDE**. This folder is usually `C:\Program Files (x86)\Arduino` for a standard Windows installation or `/Applications/Arduino.app` under macOS. It is a user-created folder in case of portable installation (like the Gamebuino pre-cooked IDE) or installation in a user-defined folder. This is the folder where you can find the `arduino-builder` (named `arduino-builder.exe` if your OS is Windows). Please refer to [my other tutorial on the Arduino IDE](https://gamebuino.com/index.php/creations/understanding-the-arduino-ide) for more details.
 
 ### Setup of Arduino extension in VSCode
 
@@ -193,8 +191,6 @@ The sketch-related part of the database is located in the `.vscode/ipch` folder 
 
 It is possible to close the related VSCode project, identify the related folders (not so easy, e.g. by looking at the file modification dates), remove the database files and restart VSCode. After such an action, logs show the complete procedure including compiler detection and so on.
 
-It should be possible to perform the same kind of action under MacOS and Linux (please let me know where the files are stored, such that I can add it in the tutorial).
-
 ### General structure of `c_cpp_properties.json`
 
 Parameters of both engines are described in details in the [c_cpp_properties.json reference guide](https://github.com/Microsoft/vscode-cpptools/blob/master/Documentation/LanguageServer/c_cpp_properties.json.md) on GitHub. In addition to the paths, noticeable parameters for Arduino are:
@@ -255,7 +251,7 @@ This is a first implementation of the file for Windows **using the Tag Parser** 
 }
 ```
 
-Note that the single slash separator (`/`) can be used in JSON files even for Windows paths. Otherwise, each backslash needs to be escaped with an extra backslash (`\\`). Using single slash characters will ease the portability to Linux/MacOS. And as always, keep in mind that JSON is very sensitive to commas if you edit the file.
+Note that the single slash separator `/` can be used in JSON files even for Windows paths. Otherwise, each backslash needs to be escaped with an extra backslash. Using single slash characters will ease the portability to Linux/macOS. And as always, keep in mind that JSON is very sensitive to commas if you edit the file.
 
 This implementation is very rough. It allows VSCode to find all include files, but has a number of drawbacks, including:
 
@@ -522,7 +518,7 @@ The complete file:
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "\"${env:MAC_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus   -mthumb -c -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10808 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -save-temps=obj -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "compilerPath": "\"${env:MAC_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1/bin/arm-none-eabi-g++\" -mcpu=cortex-m0plus   -mthumb -c -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10808 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -save-temps=obj -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
             "includePath": [
                 "${workspaceFolder}",
                 "${env:MAC_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
