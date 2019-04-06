@@ -75,7 +75,7 @@ As you can see I use Fractalino as sketch for this tutorial. Note that:
 
 Time to **setup the connection to the Gamebuino** for this sketch, like in the Arduino IDE. Make sure that the Gamebuino is connected and switched on, then click on the `<Select Board Type>` and `<Select Serial Port>` and select the correct values.
 
-ATTENTION: by connecting the Gamebuino while the sketh is openend but not yet configured, the Arduino extension may auto-detect the wrong board type e.g. `Arduino/Genuino Zero`. In such a case click on the board type name and select the `Gamebuino Meta` board type instead.
+ATTENTION: by connecting the Gamebuino while the sketch is opened but not yet configured, the Arduino extension may auto-detect the wrong board type e.g. `Arduino/Genuino Zero`. In such a case click on the board type name and select the `Gamebuino Meta` board type instead.
 
 Alternatively, you can use again the command palette <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>P</kbd>:
 
@@ -420,11 +420,10 @@ At this point, we assume that:
 Then:
 
 - Download and copy the [complete `c_cpp_properties.json` file](https://raw.githubusercontent.com/bfxdev/Arduino/master/VSCode/c_cpp_properties.json) into the `.vscode` folder of your sketch.
-- Make sure that you select the correct configuration of the file. which can be used for Windows, macOS and Linux, plus the portables versions (the Gamebuino-prepared Arduino IDE installation is a portable version):
+- Make sure that you select the correct configuration of the file, which can be used for Windows, macOS and Linux, plus the portables versions (the Gamebuino-prepared Arduino IDE installation is a portable version):
 ![select configuration](vsc-select-configuration.png)
 - If your installation is different than the default one (e.g. you changed the location of your sketchbook), you may need to adapt the related `xx_PACKAGES_PATH` and `xx_SKETCHBOOK_PATH` to other locations.
-- Set `"output":"build"` in your `arduino.json` file and create an empty `build` folder inside your sketchbook.
-- Prefer putting your source files in a `src` folder inside your sketch folder to avoid conflicts during compilation.
+- Set `"output":"build"` in your `arduino.json` file
 
 Finally, don't forget to leave some time to the IntelliSense engine to parse the header files (check the changing icon on the bottom-right).
 
