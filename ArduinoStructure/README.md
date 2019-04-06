@@ -10,7 +10,7 @@ This text is a technical article more than a real tutorial, but a couple of twea
 
 Here is a list of the software versions used in this tutorial:
 
-- Arduino IDE version 1.8.8
+- Arduino IDE version 1.8.9
 - Arduino SAMD Board (32-bits ARM Cortex-M0+) version 1.6.20
 - Gamebuino META Board version 1.2.1
 - Gamebuino Library version 1.3.1
@@ -27,9 +27,9 @@ To start with, there are several ways to install the Arduino IDE:
 
 3. **Arduino IDE installed in a folder**: classical installation without administrator rights under Windows, set up by choosing the _ZIP file for non admin install_ on the [official Arduino download page](https://www.arduino.cc/en/Main/Software) and decompressing it into a folder.
 
-4. **Web-based Arduino IDE**: new style of IDE for Arduino, requiring the installation of a plugin and allowing to [code in the web-browser](https://create.arduino.cc/projecthub/Arduino_Genuino/getting-started-with-arduino-web-editor-on-various-platforms-4b3e4a). No description of this kind of installation in this tutorial, too far away from the other installations, and not likely to be useable with any other external tool.
+4. **Arduino IDE app from the Microsoft Store**: [Windows-specific packaging](https://www.microsoft.com/en-us/p/arduino-ide/9nblggh4rsd8) of the Arduino IDE, set up by installing as any other Windows app from the store. It may not be  fully supported by other tools, but has some advantages.
 
-5. **Arduino IDE app from the Microsoft Store**: [Windows-specific packaging](https://www.microsoft.com/en-us/p/arduino-ide/9nblggh4rsd8) of the Arduino IDE, which does not seem to be fully supported by other tools. No description of this kind of installation in this tutorial, even if most of the information may be applicable (I did not really try it).
+5. **Web-based Arduino IDE**: new style of IDE for Arduino, requiring the installation of a plugin and allowing to [code in the web-browser](https://create.arduino.cc/projecthub/Arduino_Genuino/getting-started-with-arduino-web-editor-on-various-platforms-4b3e4a). No description of this kind of installation in this tutorial, too far away from the other installations, and not likely to be useable with any other external tool.
 
 ## Location of Arduino-related files
 
@@ -41,10 +41,13 @@ We will take the convention of using the slash as path separator for all paths e
 
 In this section we look at the path where the Arduino IDE is installed. We will reference to it as `ARDUINO_IDE_PATH`, located at:
 
-- `C:\Program Files (x86)\Arduino` for a standard Windows installation or `/Applications/Arduino.app` under macOS
+- `C:\Program Files (x86)\Arduino` for a standard Windows installation
+- `C:\Program Files\WindowsApps\ArduinoLLC.ArduinoIDE_xxxxxxx` for a Windows installation from the Microsoft Store
+- `/Applications/Arduino.app` under macOS
 - The folder where it was de-compressed in case of:
   - Portable installation
-  - Standard installation into a folder, without administrator rights
+  - User-defined installation into a folder without administrator rights
+  - Linux installation (the installer just creates a link to the main executable)
 
 Under this folder, we will find the default boards, libraries and tools:
 
@@ -55,7 +58,7 @@ Under this folder, we will find the default boards, libraries and tools:
   - `ARDUINO_IDE_PATH/hardware/tools`: the default tools including the AVR toolchain, where it is particularly difficult to understand what are the relevant files (e.g. many `include` folders in the tree).
 - `ARDUINO_IDE_PATH/portable`: only present for a portable installation, containing in turn the sub-folders `packages` and `sketchbook`, described in the next sections
 
-### Hardware packages folder in Arduino15
+### Hardware `packages` folder in `portable`, `Arduino15`, `ArduinoData` or `.arduino15` folder
 
 In this section we look at the folder named `packages`. This folder contains the **cores and tools from user-downloaded boards** (installed with the _Boards Manager_ in the IDE) and is either under `ARDUINO_IDE_PATH/portable` for a portable installation, or under the mysterious `Arduino15` folder.
 
@@ -63,12 +66,13 @@ The `Arduino15` folder, even if normally hidden, may look familiar to you becaus
 
 Concatenated with the possible locations of its parent folder, the `packages` folder, that we will call unsurprisingly `PACKAGES_PATH`, should be located at:
 
-- `C:\Users\[UserName]\AppData\Local\Arduino15\packages` on Windows
+- `C:\Users\[UserName]\AppData\Local\Arduino15\packages` on Windows with a classical installation
+- `C:\Users\[UserName]\Documents\ArduinoData\packages` on Windows with an installation as Store App
 - `~/Library/Arduino15/packages` on macOS
 - `~/.arduino15/packages` on Linux
 - `ARDUINO_IDE_PATH/portable/packages` for a portable installation
 
-Under the `packages` folder, we will find the user-downloaded boards, where each board is in a single sub-folder (`arduino` for the Arduino SAMD 32-bits ARM Cortex-M0+, and `gamebuino` for the Gambuino, _both are necessary_).
+Under the `packages` folder, we will find the user-downloaded boards, where each board is in a single sub-folder (`arduino` for the Arduino SAMD 32-bits ARM Cortex-M0+, and `gamebuino` for the Gamebuino, _both are necessary_).
 
 In each board sub-folder, we find _again_ the same kind of files as in the Arduino IDE folder. The following files and folders are part of the Gamebuino META board:
 
@@ -83,7 +87,8 @@ In each board sub-folder, we find _again_ the same kind of files as in the Ardui
   - `SAMD_AnalogCorrection`: [SAMD_AnalogCorrection library](https://github.com/arduino/ArduinoCore-samd/tree/master/libraries/SAMD_AnalogCorrection) to set and enable the digital correction logic of the SAMD Analogic Digital Converter
 
 The SAMD Board folder at `PACKAGES_PATH/arduino` is apparently the basis of the Gamebuino board definition. It contains almost the same files with more board variants, and in addition it provides the tools, including:
-- `PACKAGES_PATH/arduino/tools/bossac`: Used for uploading the .bin to the board
+
+- `PACKAGES_PATH/arduino/tools/bossac`: Used for uploading the `.bin` to the board
 - `PACKAGES_PATH/arduino/tools/openocd`: Used for on-chip debug (I personally never used it)
 - `PACKAGES_PATH/arduino/tools/CMSIS`: Libraries of the vendor-unspecific [Cortex Microcontroller Software Interface Standard (CMSIS)](www.arm.com/cmsis) created by ARM (I have to try the fast DSP math functions)
 - `PACKAGES_PATH/arduino/tools/CMSIS-Atmel`: CMSIS vendor-specific files for [ATMEL Smart-ARM (SAM) processors](https://en.wikipedia.org/wiki/Atmel_ARM-based_processors)
@@ -147,35 +152,19 @@ In this section we look at some simple tweaks.
 
 ### Set the build path
 
-There is no way to set the path where temporay files are stored during compilation in the Arduino IDE. The path is chosen as a folder named `arduino_build_xxxxxx` (where `x` are numbers) in the system-wide temporary folder (`C:\Temp` for Windows), plus another folder named `arduino_cache_xxxxxx` to store the compiled core.
+There is no way to set the path where temporary files are stored during compilation in the Arduino IDE. The path is chosen as a folder named `arduino_build_xxxxxx` (where `x` are numbers) in the system-wide temporary folder (`C:\Temp` for Windows), plus another folder named `arduino_cache_xxxxxx` to store the compiled core.
 
 The drawback with temporary folders is that the system may delete them, and the path may change.
 
-Instead of the temporary folder you can **set a build sub-folder in your sketch folder** in your [preferences.txt file](https://www.arduino.cc/en/hacking/preferences):
+Instead of the temporary folder you can **set a build folder** in your [preferences.txt file](https://www.arduino.cc/en/hacking/preferences):
 
 - Click on the path mentioning `preferences.txt` at the bottom of the Preferences dialog window of the Arduino IDE to open the folder.
 - **Close all windows of the Arduino IDE** before editing the `preferences.txt` file (otherwise your changes will be overwritten when you exit the IDE)
-- Edit the file with a text editor and add the line `build.path=build` to use the relative path `build` as build folder (see the remarks below). An absolute path can be given as well.
-- Create a `build` folder in your sketch folder (see remarks below)
+- Edit the file with a text editor and add the line `build.path=[myPath]` to use the path `[myPath]` as build folder. An absolute or relative path can be given (see the remarks below).
 - Close the text editor
 - Start again the Arduino IDE and compile your sketch
 
-ATTENTION: According to my experience on Windows, if the build path is given as a relative path (e.g. just `build`) that is not existing in the sketch folder at compilation time, then the **build folder is created in the Arduino IDE folder** (so it needs to be writable). If the build folder is existing in the sketch folder, then it is used.
-
-ATTENTION: **If the build folder is directly in the sketch folder, include files may not be found during compilation**. Very strange cyclic behavior of the arduino-builder, at least on Windows: "Verify" needs to be started 3 times to work!! The first and second times, the compilation stops with an error like:
-
-```
-Fractalino:48:22: error: Pictures.h: No such file or directory
- #include "Pictures.h"
-                      ^
-compilation terminated.
-```
-
-And the third time it is successful, then the 3-times cycle restarts. Normally, the arduino-builder should create a `sketch` sub-folder in the build folder, then is supposed to copy the include files into it. Apparently, the build folder inside the sketch folder disturbs the detection of include files, such that the `.h` files are not copied. Note that this issue does not occur when using multiple `.ino` files in the sketch folder.
-
-Now, if you want to to keep the build folder in the sketch folder, the **solution is to store the `.ino` file(s) and the `.h` file(s) inside an `src` folder** inside the sketch folder.
-
-This is as well possible to define an absolute build path in `preferences.txt`. 
+ATTENTION: According to my experience on Windows, if the build path is given as a relative path (e.g. just `build`) then the **build folder is created in the Arduino IDE folder** (so it needs to be writable). Prefer defining an absolute path (but starting with Arduino IDE 1.8.9, I don't know a way to create the build folder automatically in the sketch folder).
 
 To conclude this section, I could not find any description of the parameters of the `preferences.txt` file, just either [an outdated file with comments](https://github.com/arduino/Arduino/blob/master/build/shared/lib/preferences.txt) or the [exhaustive list of parameters](https://github.com/arduino/arduino-builder/blob/master/constants/constants.go) in the `arduino-builder` source code. By the way, there is a foreseen variable to set the build path of the core, named `build.core.path` in `preferences.txt`, but it seems to be buggy. The core is always built into a temporary folder.
 
