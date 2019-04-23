@@ -27,7 +27,7 @@ To start with, there are several ways to install the Arduino IDE:
 
 3. **Arduino IDE installed in a folder**: classical installation without administrator rights under Windows, set up by choosing the _ZIP file for non admin install_ on the [official Arduino download page](https://www.arduino.cc/en/Main/Software) and decompressing it into a folder.
 
-4. **Arduino IDE app from the Microsoft Store**: [Windows-specific packaging](https://www.microsoft.com/en-us/p/arduino-ide/9nblggh4rsd8) of the Arduino IDE, set up by installing as any other Windows app from the store. It may not be  fully supported by other tools, but has some advantages.
+4. **Arduino IDE app from the Microsoft Store**: [Windows-specific packaging](https://www.microsoft.com/en-us/p/arduino-ide/9nblggh4rsd8) of the Arduino IDE, set up by installing as any other Windows app from the store. It is installed in an obscure folder in the user's home area and is hence difficult to use in other tools, but has the big advantage that board files are stored explicitly in the user's documents.
 
 5. **Web-based Arduino IDE**: new style of IDE for Arduino, requiring the installation of a plugin and allowing to [code in the web-browser](https://create.arduino.cc/projecthub/Arduino_Genuino/getting-started-with-arduino-web-editor-on-various-platforms-4b3e4a). No description of this kind of installation in this tutorial, too far away from the other installations, and not likely to be useable with any other external tool.
 
@@ -42,7 +42,7 @@ We will take the convention of using the slash as path separator for all paths e
 In this section we look at the path where the Arduino IDE is installed. We will reference to it as `ARDUINO_IDE_PATH`, located at:
 
 - `C:\Program Files (x86)\Arduino` for a standard Windows installation
-- `C:\Program Files\WindowsApps\ArduinoLLC.ArduinoIDE_xxxxxxx` for a Windows installation from the Microsoft Store
+- `C:\Program Files\WindowsApps\ArduinoLLC.ArduinoIDE_xxxxxxx` for a Windows installation from the Microsoft Store (where the `x` contain the version number of the Arduino Store app and some unique identifiers)
 - `/Applications/Arduino.app` under macOS
 - The folder where it was de-compressed in case of:
   - Portable installation
