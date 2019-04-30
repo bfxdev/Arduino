@@ -430,6 +430,8 @@ void loop()
       // Manages speed
       if (gb.buttons.repeat(BUTTON_A,0))
         kartSpeed += 0.12;
+      if (gb.buttons.repeat(BUTTON_UP,0))
+        kartSpeed += 0.15;
       if (gb.buttons.repeat(BUTTON_DOWN,0))
         kartSpeed -= 0.05;
       kartSpeed *= 0.9;
