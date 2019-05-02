@@ -254,15 +254,15 @@ void loop()
     case 0: // Sine deformation ---------------------------------------------------------------
     {
       // Loops on each row
-      for(int py=0; py<64; py++)
+      for(int y=0; y<64; y++)
       {
         // Creates background color for this row, blue shade from light to dark
-        background = gb.createColor(0,0,(64-py)*4-1);
+        background = gb.createColor(0,0,(64-y)*4-1);
 
         startx = FP32_FROM_FLOAT(-50);
-        starty = FP32_FROM_FLOAT((float)py*4.0);
-        incx =   FP32_FROM_FLOAT((1.5+cos(time+(float)py/20.0))*2.0);
-        incy =   FP32_FROM_FLOAT((1.5+sin(time+(float)py/20.0))*2.0);
+        starty = FP32_FROM_FLOAT((float)y*4.0);
+        incx =   FP32_FROM_FLOAT((1.5+cos(time+(float)y/20.0))*2.0);
+        incy =   FP32_FROM_FLOAT((1.5+sin(time+(float)y/20.0))*2.0);
 
         destination = drawRow(source, destination, startx, starty, incx, incy, infinite, background);
       }
@@ -273,23 +273,22 @@ void loop()
     case 1: // Non-optimized 3D display -------------------------------------------------------
     {
       // Loops on each row
-      for(int py=0; py<64; py++)
+      for(int y=0; y<64; y++)
       {
         // Creates background color for this row, blue shade from light to dark
-        background = gb.createColor(0,0,(64-py)*4-1);
+        background = gb.createColor(0,0,(64-y)*4-1);
 
         // First lines are filled with background to avoid division by zero and moire effect
-        if(py<firstRow)
+        if(y<firstRow)
           for(int px=0; px<80; px++)
             *destination++ = background;
         else
         {
           // Computes start point and increment as floats
-          float y = (float)py;
-          float Dx = Ox + s*h*cos(a)/y - w*h*sin(a)/y;
-          float Dy = Oy - s*h*sin(a)/y - w*h*cos(a)/y;
-          float Ix = h*sin(a)/y;
-          float Iy = h*cos(a)/y;
+          float Dx = Ox + s*h*cos(a)/y - w*h*sin(a)/(float)y;
+          float Dy = Oy - s*h*sin(a)/y - w*h*cos(a)/(float)y;
+          float Ix = h*sin(a)/(float)y;
+          float Iy = h*cos(a)/(float)y;
 
           // Transforms floats into fixed-point variables
           startx = FP32_FROM_FLOAT(Dx);
@@ -308,19 +307,19 @@ void loop()
     case 2: // 3D display floats --------------------------------------------------------------
     {
       // Loops on each row
-      for(int py=0; py<64; py++)
+      for(int y=0; y<64; y++)
       {
         // Creates background color for this row, blue shade from light to dark
-        Color background = gb.createColor(0,0,(64-py)*4-1);
+        Color background = gb.createColor(0,0,(64-y)*4-1);
 
         // First lines are filled with background to avoid division by zero and moire effect
-        if(py<firstRow)
+        if(y<firstRow)
           for(int px=0; px<80; px++)
             *destination++ = background;
         else
         {
           // Computes values for the row
-          float factor = 1/(float)py;
+          float factor = 1/(float)y;
           startx = FP32_FROM_FLOAT(Ox + Ax*factor);
           starty = FP32_FROM_FLOAT(Oy + Ay*factor);
           factor *= h;
@@ -338,19 +337,19 @@ void loop()
     case 3: // 3D display fixed point --------------------------------------------------------------
     {
       // Loops on each row
-      for(int py=0; py<64; py++)
+      for(int y=0; y<64; y++)
       {
         // Direct creation of the background color (Blue part on 5 bits)
-        Color background = (Color)((62-py)>>1);
+        Color background = (Color)((62-y)>>1);
 
         // First lines are filled with background to avoid division by zero and moire effect
-        if(py<firstRow)
+        if(y<firstRow)
           for(int px=0; px<80; px++)
             *destination++ = background;
         else
         {
           // Computes values for the row
-          FP32 factorFP = FP32_DIV(1<<16 , py<<16);
+          FP32 factorFP = FP32_DIV(1<<16 , y<<16);
           //FP32 factorFP = FP32_FROM_FLOAT(1/(float)py);
           startx = OxFP + FP32_MUL(AxFP, factorFP);
           starty = OyFP + FP32_MUL(AyFP, factorFP);
@@ -369,19 +368,19 @@ void loop()
     case 4: // 3D display TileMap --------------------------------------------------------------
     {
       // Loops on each row
-      for(int py=0; py<64; py++)
+      for(int y=0; y<64; y++)
       {
         // Direct creation of the background color (Blue part on 5 bits)
-        Color background = (Color)((62-py)>>1);
+        Color background = (Color)((62-y)>>1);
 
         // First lines are filled with background to avoid division by zero and moire effect
-        if(py<firstRow)
+        if(y<firstRow)
           for(int px=0; px<80; px++)
             *destination++ = background;
         else
         {
           // Computes values for the row
-          FP32 factorFP = FP32_DIV(1<<16 , py<<16);
+          FP32 factorFP = FP32_DIV(1<<16 , y<<16);
           startx = OxFP + FP32_MUL(AxFP, factorFP);
           starty = OyFP + FP32_MUL(AyFP, factorFP);
           factorFP = FP32_MUL(factorFP, hFP);
@@ -400,19 +399,19 @@ void loop()
     case 5: // 3D display fixed point TileMap with controllable Kart ----------------------------------------
     {
       // Loops on each row
-      for(int py=0; py<64; py++)
+      for(int y=0; y<64; y++)
       {
         // Direct creation of the background color (Blue part on 5 bits)
-        Color background = (Color)((62-py)>>1);
+        Color background = (Color)((62-y)>>1);
 
         // First lines are filled with background to avoid division by zero and moire effect
-        if(py<firstRow)
+        if(y<firstRow)
           for(int px=0; px<80; px++)
             *destination++ = background;
         else
         {
           // Computes values for the row
-          FP32 factorFP = FP32_DIV(1<<16 , py<<16);
+          FP32 factorFP = FP32_DIV(1<<16 , y<<16);
           startx = OxFP + FP32_MUL(AxFP, factorFP);
           starty = OyFP + FP32_MUL(AyFP, factorFP);
           factorFP = FP32_MUL(factorFP, hFP);

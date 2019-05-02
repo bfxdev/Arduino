@@ -52,7 +52,7 @@ void loop()
   // Gets the time at start of the computation
   unsigned long startTime = micros();
 
-  // [ DRAW CODE GOES HERE ]
+  // ...
 
   // Computes and displays duration
   unsigned long duration = micros()-startTime;
@@ -129,45 +129,173 @@ At this stage a small example is certainly useful. So let's take the value `a=50
 
 I can imagine that this part is hard to follow. It is not necessary to understand completely the bits and bytes here to understand the rest of the tutorial. Just use the macros definition as provided.
 
-## Implementation of the row draw procedure
+## Implementation of the draw procedure
 
 Now that we have a comprehensive set of macros and type definitions, we can re-write the function that draws one row of pixels with an affine transformation.
 
-As a reminder, the draw principle for each row of pixels on the screen, given a source picture, is as following:
+The goal of this draw procedure is to fill a row of pixels on the screen from left to right, and the color of each pixel is read from a straight line on the source picture starting at a given position `(x,y)`, where `x` and `y` are fixed-point values.
 
-- The pixels row is drawn from left to right, and the color of each pixel is read from a straight line on the source picture starting at a given position `(x,y)`, where `x` and `y` are fixed-point values.
-- For each pixel to draw on the screen row, its color is read from the source picture at a position equal the the integer parts of `x` and `y`.
+Technically:
+
+- For each pixel to draw on the screen row, the color is read from the source picture at a position equal the the integer parts of `x` and `y`
 - Once the pixel is written on the screen, we go to the next pixel to draw, and the values of `x` and `y` are incremented by the fixed-point values `dx` and `dy`, i.e. `x=x+dx` and `y=y+dy`
 
-That's all! It is really just like: take the color at `(x,y)` on the source picture, write it on the screen, then go to the next position on the source picture by adding `(dx,dy)` to `(x,y)`, and so on. The constant "row increment" `(dx,dy)` leads naturally to a straight line on the source picture.
+That's all! It is really just like: take the color at `(x,y)` on the source picture, write the pixel on the screen, then go to the next position on the source picture by adding `(dx,dy)` to `(x,y)`, write the next pixel and so on.
 
-We will access the screen and the source picture directly in memory for performance. Following the [good remarks of Alban](https://gamebuino.com/@Alban), let's just define 2 pointers on the pixel buffers `Color* source` and `Color* destination`, which we will use like array of Color types (i.e. 16-bits integers as each RGB565 pixel is encoded on 2 bytes).
+Because the "column increment" `(dx,dy)` is constant, the successive values of `(x,y)` follow a straight line on the source picture.
 
+We will access the screen and the source picture directly in memory. Following the good remarks of [Alban](https://gamebuino.com/@Alban) on the Affine tutorial, we just define the two pointers `Color* source` and `Color* destination` as parameters to the function.
 
+`destination` will point to the current pixel being drawn in the buffer of `gb.display`.
 
+`source` will point to the first pixel of the source picture, and will be used as one-dimensional array.
 
+The main trick of this draw procedure is the choice of the size of the source picture: 256x256. It means that each X and Y coordinate of a pixel fits exactly on one unsigned byte (with a value from 0 to 255), hence:
 
+- If the `x` or `y` coordinate is represented as an `FP32` variable (with a 16-bits integer part), then:
+  - If the most significant byte of the integer part is equal to zero, then the coordinate is inside the picture (between _0_ and _255_), e.g. `0x0123=291` is outside (most significant byte is `0x01=FP32_MSBYTE(0x0123)`), `0x00FF=255` is inside (MSB is `0x00`), `0xFFFE=-2` is outside (MSB is `0xFF`). This is why we defined the macro `FP32_MSBYTE`
+  - If the `x` and `y` coordinates as `FP32` are between _0.0_ and _255.9999_, we need just to extract the least significant byte of the integer part, e.g. from `(int32_t)(255.9999*65536)=16777215=0x00FFFFFF` the integer part (16 most significant bits) is `0x00FF` and its least significant byte is `0xFF=255=FP32_LSBYTE(16777215)`. This is why we defined the macro `FP32_LSBYTE`
+- If we extract the byte values `X=FP32_LSBYTE(x)` and `Y=FP32_LSBYTE(y)`, the offset of the pixel in the source picture is given by `Y*256 + X` or `Y<<8 + X` (because an 8-bits shift is the same as multiplying by 2^8=256).
 
+Tricks with integers and boolean algebra are almost magical! By using powers of 2, mulplications, modulos and divisions become just bit shifting and masking. Such tricks would deserve a specific tutorial.
 
+Time to write the draw procedure. We want to draw exactly 80 pixels on each pixel row. Instead of a loop, we will define again a macro that will repeat the same code 80 times. The definition is straightforward:
 
+```C++
+// Macros to repeat 80 times the same text
+#define REPEAT20(X) X X X X X X X X X X X X X X X X X X X X
+#define REPEAT80(X) REPEAT20(X) REPEAT20(X) REPEAT20(X) REPEAT20(X)
+```
 
+Once again, here are the parameters summarized:
 
+- `x` and `y` are FP32 variables pointing to the location in the source picture to take pixels from
+- `dx` and `dy` are FP32 variables representing the "column increment"
+- `source` is a `Color` array containing the source picture
+- `destination` is a `Color*` pointer on the pixel to draw in the screen frame buffer
+- `background` is a background color to use in case one of the `x` or `y` coordinate is outside the source picture
 
+Then the main part of the procedure is easily understandable. We repeat 80 times:
 
+- If one of the `x` or `y` coordinates is not pointing inside the picture, then the current pixel at `destination` on the screen receives the `background` color, then `destination` is incremented to move to the next pixel on its right
+- Otherwise the current pixel at `destination` receives the color picked from the `source` picture at offset `Y*256+X`, where `X` and `Y` are the least significant bytes of the integer parts of `x` and `y`, then `destination` is incremented
+- Finally `x` is incremented by `dx` and `y` by `dy`
 
+As C++ code:
 
+```C++
+    REPEAT80(
+      if (FP32_MSBYTE(x)!=0 || FP32_MSBYTE(y)!=0)
+        *destination++ = background;
+      else
+        *destination++ = source[ FP32_LSBYTE(x) + (FP32_LSBYTE(y)<<8) ];
+      x += dx; y += dy;
+    )
+```
 
-## Part 2: Non-affine deformation
+Like in the Affine tutorial, the boundaries test on the `x` and `y` coordinates can be just ignored. It is safe to use the least significant bytes because their values are automatically between 0 and 255 and hence always correspond to a point in the source picture. The resulting effect is that the picture is displayed as if it would be repeated infinitely in all directions.
 
+We can the define a new boolean `infinite` and write the final version of the draw function (which goes at the beginning of the sketch, after the macros definition):
 
+```C++
+// Draws one row of 80 pixels at destination using pixel colors from the source picture
+// at (x,y) and incremented at each pixel by (dx, dy)
+Color* drawRow(Color* source, Color* destination, FP32 x, FP32 y, FP32 dx, FP32 dy,
+               bool infinite=true, Color background=BLACK)
+{
+  // Repeat 80 times the same instructions without boundaries test if infinite
+  if (infinite)
+  {
+    REPEAT80(
+      *destination++ = source[ FP32_LSBYTE(x) + (FP32_LSBYTE(y)<<8) ];
+      x += dx; y += dy;
+    )
+  }
+
+  // Repeat 80 times the same instructions with boundaries test
+  else
+  {
+    REPEAT80(
+      if (FP32_MSBYTE(x)!=0 || FP32_MSBYTE(y)!=0)
+        *destination++ = background;
+      else
+        *destination++ = source[ FP32_LSBYTE(x) + (FP32_LSBYTE(y)<<8) ];
+      x += dx; y += dy;
+    )
+  }
+
+  // Returns the last value of destination, now pointing on the first pixel of the next row
+  return destination;
+}
+```
+
+Last remark: the function returns the last computed `destination` value. It is useful because after drawing one line of pixels, it points to the first pixel on the next line.
+
+## Part 3: Non-affine deformation
+
+Enough theory, after this long reminder of the Affine tutorial, and now that the draw procedure is written, let's see how to play with it!
+
+Before the loop, define a global `infinite` variable to control boundaries check (modify this variable manually as you wish):
+
+```C++
+  // Considers boundaries of source picture or wrapped infinitely
+  bool infinite=false;
+```
+
+At the beginning of the `loop()`, add the following code to initialize the first values of our pointers, and define start values for the positions and increments:
+
+```C++
+  // Inits pointers on source and destination pixel arrays
+  Color* source = (Color*)(PictureData+6);
+  Color* destination = (Color*)(gb.display._buffer);
+
+  // Defines other variables
+  Color background;
+  FP32 startx, starty, incx, incy;
+```
+
+Then, in `loop()` under the `unsigned long startTime = micros();` line, add a new float counter called `time`, giving the current time in seconds:
+
+```C++
+  // Time in seconds
+  float time = (float)startTime/1e6;
+```
+
+Then add the following loop on the successive rows of the screen, which first defines a shaded `background` color, and then inits the start positions and increments to some mathematical functions depending on the new `time` counter (used mainly as angle of trigonometry functions).
+
+I won't explain the formulas, because they were designed with mathematical feeling more than reasoning, just to get something nice to look at!
+
+```C++
+      // Loops on each row
+      for(int y=0; y<64; y++)
+      {
+        // Creates background color for this row, blue shade from light to dark
+        background = gb.createColor(0,0,(64-y)*4-1);
+
+        startx = FP32_FROM_FLOAT(-50);
+        starty = FP32_FROM_FLOAT((float)y*4.0);
+        incx =   FP32_FROM_FLOAT((1.5+cos(time+(float)y/20.0))*2.0);
+        incy =   FP32_FROM_FLOAT((1.5+sin(time+(float)y/20.0))*2.0);
+
+        destination = drawRow(source, destination, startx, starty, incx, incy, infinite, background);
+      }
+```
+
+The result is cool, here with picture boundaries check i.e. `infinite=false`:
+
+![deformation](pictures/deformation-big.gif)
+
+With `infinite=true`:
+
+![deformation-infinite](pictures/deformation-infinite-big.gif)
 
 ## Part 4: Non-optimized 3D projection
 
-Let's now try to do something more useful with the draw function: simulate a 3D view of the source picture.
+Let's now try to do something more useful with the draw function: simulate a 3D view of the source picture. Again, the principle here is to determine the start position and the increments for each line.
 
 So we consider an observer at **O** looking down to the picture through a **screen** such that the top of the screen is located at the same height as the observer, here seen from the right:
 
-![right](projection-right.png)
+![right](pictures/projection-right.png)
 
 The observer will see the first line of the picture at **A** and the last line at **B**. From A to B, due to the perspective, the distance decreases between successive drawn lines (i.e. objects appear smaller when they are farer). So the _row increment_, as named in the first Affine tutorial, is not constant during the draw.
 
@@ -223,6 +351,64 @@ And finally:
     Dy = Oy - s*h*sin(a)/y - w*h*cos(a)/y
     Ix = h*sin(a)/y
     Iy = h*cos(a)/y
+
+The hard part was to determine the formulas. In comparison the implementation is easy. First add the definition of the 3D view parameters somewhere before the `loop()` function:
+
+```C++
+// 3D view parameters
+float s, h, w, Ox, Oy, a;
+int firstRow = 1;
+```
+
+Here `firstRow` gives the `y` coordinate of the first row where the 3D draw begins. As we saw previously, the formulas will fail if `y` is zero (due to the division by `y`). It will remain constant.
+
+Somewhere in the `loop()` function, assign values to the parameters. `a` is directly equal to `time` and the `h` parameter follows a sine curve with the time. Other parameters are fixed. Change the parameter values to see what happens:
+
+```C++
+  // Default view values
+  s = 100;
+  w = 40;
+  a = time;
+  Ox = 128;
+  Oy = 128;
+  h = 25+10*sin(time/3);
+```
+
+Finally, replace the loop by the following code, which implements the formulas directly:
+
+```C++
+      // Loops on each row
+      for(int y=0; y<64; y++)
+      {
+        // Creates background color for this row, blue shade from light to dark
+        background = gb.createColor(0,0,(64-y)*4-1);
+
+        // First lines are filled with background to avoid division by zero and moire effect
+        if(y<firstRow)
+          for(int px=0; px<80; px++)
+            *destination++ = background;
+        else
+        {
+          // Computes start point and increment as floats
+          float Dx = Ox + s*h*cos(a)/y - w*h*sin(a)/(float)y;
+          float Dy = Oy - s*h*sin(a)/y - w*h*cos(a)/(float)y;
+          float Ix = h*sin(a)/(float)y;
+          float Iy = h*cos(a)/(float)y;
+
+          // Transforms floats into fixed-point variables
+          startx = FP32_FROM_FLOAT(Dx);
+          starty = FP32_FROM_FLOAT(Dy);
+          incx =   FP32_FROM_FLOAT(Ix);
+          incy =   FP32_FROM_FLOAT(Iy);
+
+          // Draws row
+          destination = drawRow(source, destination, startx, starty, incx, incy, infinite, background);
+        }
+      }
+```
+
+
+
 
 
 
