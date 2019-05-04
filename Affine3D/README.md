@@ -1,3 +1,7 @@
+
+# :construction: UNDER CONSTRUCTION :construction:
+
+
 # Affine3D
 
 This tutorial follows the first [Affine tutorial](https://gamebuino.com/community/topic/affine-full-screen-picture-zoom-and-rotation), where we saw how to display a full-screen picture with zoom and rotation.
@@ -25,7 +29,7 @@ So create a new sketch and use the [image transcoder](https://gamebuino.com/crea
 ```C++
 #include <Gamebuino-Meta.h>
 
-const uint16_t PictureData[] = {256,256,1, 1, 0, 0, 0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0,0x0, .....
+const uint16_t PictureData[] = {256,256,1, 1, 0, 0, 0x0,0x0,0x0,0x0,0x0,...
 ```
 
 After that, we add some basic code like in the Affine tutorial to:
@@ -129,7 +133,7 @@ At this stage a small example is certainly useful. So let's take the value `a=50
 
 I can imagine that this part is hard to follow. It is not necessary to understand completely the bits and bytes here to understand the rest of the tutorial. Just use the macros definition as provided.
 
-## Implementation of the draw procedure
+## Part 3: Implementation of the draw procedure
 
 Now that we have a comprehensive set of macros and type definitions, we can re-write the function that draws one row of pixels with an affine transformation.
 
@@ -231,18 +235,24 @@ Color* drawRow(Color* source, Color* destination, FP32 x, FP32 y, FP32 dx, FP32 
 
 Last remark: the function returns the last computed `destination` value. It is useful because after drawing one line of pixels, it points to the first pixel on the next line.
 
-## Part 3: Non-affine deformation
+## Part 3: Picture deformation
 
 Enough theory, after this long reminder of the Affine tutorial, and now that the draw procedure is written, let's see how to play with it!
 
-Before the loop, define a global `infinite` variable to control boundaries check (modify this variable manually as you wish):
+Before the loop, define a global frame `counter`variable, a global `a` variable used for animation (as angle), and a global `infinite` variable to control if we want to display an infinite picture or not (modify this variable manually as you wish):
 
 ```C++
-  // Considers boundaries of source picture or wrapped infinitely
-  bool infinite=false;
+// Frame counter
+long int counter=0;
+
+// Main animation variable and view angle
+float a;
+
+// Displays infinitely wrapped source picture (boundaries check)
+bool infinite=false;
 ```
 
-At the beginning of the `loop()`, add the following code to initialize the first values of our pointers, and define start values for the positions and increments:
+Now in the `loop()` function, under the line `unsigned long startTime = micros();`, add the following code to initialize the first values of our pointers, define start values for the positions and increments, increments the counter and give a value to the float variable `a`, which will increase a little at each frame (this variable will be used as angle):
 
 ```C++
   // Inits pointers on source and destination pixel arrays
@@ -252,16 +262,15 @@ At the beginning of the `loop()`, add the following code to initialize the first
   // Defines other variables
   Color background;
   FP32 startx, starty, incx, incy;
+
+  // Increments frame counter
+  counter += 1;
+
+  // Grows slowly with time
+  a = (float)counter/50;
 ```
 
-Then, in `loop()` under the `unsigned long startTime = micros();` line, add a new float counter called `time`, giving the current time in seconds:
-
-```C++
-  // Time in seconds
-  float time = (float)startTime/1e6;
-```
-
-Then add the following loop on the successive rows of the screen, which first defines a shaded `background` color, and then inits the start positions and increments to some mathematical functions depending on the new `time` counter (used mainly as angle of trigonometry functions).
+Then add the following loop on the successive rows of the screen, which first defines a shaded `background` color, and then inits the start positions and increments to some mathematical functions depending on the new `a` variable (used mainly as angle of trigonometry functions).
 
 I won't explain the formulas, because they were designed with mathematical feeling more than reasoning, just to get something nice to look at!
 
@@ -289,9 +298,13 @@ With `infinite=true`:
 
 ![deformation-infinite](pictures/deformation-infinite-big.gif)
 
-## Part 4: Non-optimized 3D projection
+The performance could be improved, but it is not the focus of this part. We want to concentrate our efforts on 3D!
 
-Let's now try to do something more useful with the draw function: simulate a 3D view of the source picture. Again, the principle here is to determine the start position and the increments for each line.
+## Part 4: 3D projection
+
+Let's now try to do something more useful with the draw function: simulate a 3D view of the source picture. In this part we will do the maths.
+
+Again, the principle here is to determine the start position and the increments for each row of pixels.
 
 So we consider an observer at **O** looking down to the picture through a **screen** such that the top of the screen is located at the same height as the observer, here seen from the right:
 
@@ -314,7 +327,7 @@ We can derive a first equation from this view. It is noticeable that the line fr
 
 Seen from the top, the rotating observer at **O** sees the picture through the screen at **C** on the source picture when looking at the middle of the screen, and at **D** when looking at the left edge of the screen:
 
-![top](projection-top.png)
+![top](pictures/projection-top.png)
 
 We define the following additional parameters (all positive):
 
@@ -352,29 +365,30 @@ And finally:
     Ix = h*sin(a)/y
     Iy = h*cos(a)/y
 
-The hard part was to determine the formulas. In comparison the implementation is easy. First add the definition of the 3D view parameters somewhere before the `loop()` function:
+The hard part was to determine the formulas. In comparison the implementation is easy.
+
+First add the definition of the 3D view parameters before the `loop()` function, e.g. after the line `bool infinite=false;`:
 
 ```C++
 // 3D view parameters
-float s, h, w, Ox, Oy, a;
+float s, h, w, Ox, Oy;
 int firstRow = 1;
 ```
 
-Here `firstRow` gives the `y` coordinate of the first row where the 3D draw begins. As we saw previously, the formulas will fail if `y` is zero (due to the division by `y`). It will remain constant.
+Here `firstRow` gives the row coordinate of the first row where the 3D draw begins. As we saw previously, the formulas will fail if `y` is zero (due to the division by `y`), so we want to draw at a position below the row at `y=0`. `firstRow` will remain constant in the rest of this tutorial, but can be used to reduce the number of drawn lines.
 
-Somewhere in the `loop()` function, assign values to the parameters. `a` is directly equal to `time` and the `h` parameter follows a sine curve with the time. Other parameters are fixed. Change the parameter values to see what happens:
+Somewhere in the `loop()` function, before the draw loop, assign values to the parameters. `a` is already set. The `h` parameter follows a sine curve with `a`. Other parameters are fixed. If you want, change the parameter values to see what happens:
 
 ```C++
   // Default view values
   s = 100;
   w = 40;
-  a = time;
   Ox = 128;
   Oy = 128;
-  h = 25+10*sin(time/3);
+  h = 25+10*sin(a/3);
 ```
 
-Finally, replace the loop by the following code, which implements the formulas directly:
+Finally, replace the loop by the following code, which implements the formulas without any further optimization:
 
 ```C++
       // Loops on each row
@@ -407,12 +421,29 @@ Finally, replace the loop by the following code, which implements the formulas d
       }
 ```
 
+Note that at the top of the screen, when `y` is lower than `firstRow`, a row of pixels with `background` color is drawn.
+
+The result is as expected, but slow. Here with picture boundaries check:
+
+![float1](pictures/float1-big.gif)
+
+In infinite mode, i.e. without picture boundaries check:
+
+![float1-infinite](pictures/float1-infinite-big.gif)
 
 
+## Part 5: First optimization with floats
+
+The result is already acceptable, here with picture boundaries check:
+
+![float2](pictures/float2-big.gif)
+
+In infinite mode:
+
+![float2-infinite](pictures/float2-infinite-big.gif)
 
 
-
-## Part 4: Optimization with fixed-point computation
+## Part 6: Optimization with fixed-point arithmetic
 
 As a reminder, to encode a floating-point value into a fixed-point integer value we shift the bits to the left, or multiply by a power of 2, such that the fractional part moves to the integer part. Then we convert to an integer, removing the fractional part. For example,  if `aFP` is the encoded value of `a`, with 16 bits precision after the dot:
 
@@ -466,7 +497,46 @@ Or:
 
 It means that before dividing, we need to pre-shift `A` on 64 bits.
 
+TBD
+
+
+The result is already acceptable, here with picture boundaries check:
+
+![fixed](pictures/fixed-big.gif)
+
+Even better in infinite mode:
+
+![fixed-infinite](pictures/fixed-infinite-big.gif)
 
 
 
+
+## Part 7: Tile map
+
+We use this tile set:
+
+![tileset](pictures/race-tile-set.png)
+
+Using the Tiled editor, we get this map:
+
+![tileset](pictures/race-tile-map.png)
+
+The result is very promising, here with picture boundaries check:
+
+![tilemap](pictures/tilemap-big.gif)
+
+In infinite mode:
+
+![tilemap-infinite](pictures/tilemap-infinite-big.gif)
+
+
+## Part 8: Kart mini-game
+
+![kart1](pictures/kart1-big.gif)
+
+![kart1](pictures/kart2-big.gif)
+
+
+
+That's all folks!
 

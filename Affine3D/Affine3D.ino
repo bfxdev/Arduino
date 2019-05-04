@@ -161,44 +161,68 @@ void setup()
   gb.setFrameRate(50);
 }
 
-
-
-// Considers boundaries of source picture or wrapped infinitely
-bool infinite=false;
-
 // Part of the tutorial we are looking at, and total number of parts
+// NOT IN TUTORIAL TEXT
 int part=0, numparts = 6, previousPart = -1;
-
-// 3D view parameters
-float s, h, w, Ox, Oy, a;
-int firstRow = 1;
 
 // Time measurement variable
 unsigned long previousStartTime = micros();
+
+// Frame counter
+long int counter=0;
+
+// Main animation variable and view angle
+float a;
+
+// Displays infinitely wrapped source picture (boundaries check)
+bool infinite=false;
+
+// 3D view parameters
+float s, h, w, Ox, Oy;
+int firstRow = 1;
 
 // Kart variables
 float kartSpeed, kartDirection, kartX, kartY;
 
 
+
 void loop()
 {
+  // Waits for screen refresh
+  while(!gb.update());
+
+  // Gets the time at start of the computation
+  unsigned long startTime = micros();
+
   // Inits pointers on source and destination pixel arrays
   Color* source = (Color*)(PictureData+6);
   Color* destination = (Color*)(gb.display._buffer);
-  Color* tileset = (Color*)(raceTileSet+6);
-  int8_t* tilemap = (int8_t*)(raceTileMap);
 
-  // Defines other variables
+  // Draw variables
   Color background;
   FP32 startx, starty, incx, incy;
 
-  // If the user just selected a new part, then sets default parameters
+  // Frame counter
+  counter += 1;
+
+  // Grows slowly with time
+  a = (float)counter/50;
+
+  // Default view values
+  s = 100;
+  w = 40;
+  Ox = 128;
+  Oy = 128;
+  h = 25+10*sin(a/3);
+
+  // Inits pointers for the tile map
+  Color* tileset = (Color*)(raceTileSet+6);
+  int8_t* tilemap = (int8_t*)(raceTileMap);
+
+  // If the user just selected a new part, then resets kart position
+  // NOT IN TUTORIAL TEXT
   if (part!=previousPart)
   {
-    // Default view parameters
-    s = 100;
-    w = 40;
-
     // Kart parameters
     kartSpeed = 0;
     kartDirection=PI/2.0;
@@ -206,16 +230,8 @@ void loop()
     kartY = 136;
   }
 
-  // Waits for screen refresh
-  while(!gb.update());
-
-  // Gets the time at start of the computation
-  unsigned long startTime = micros();
-
-  // Time in seconds
-  float time = (float)startTime/1e6;
-
-  // Sets dynamic view parameters
+  // Sets dynamic view kart parameters (overwrites default values)
+  // NOT IN TUTORIAL TEXT
   if (part==5)
   {
     // Kart part
@@ -224,14 +240,8 @@ void loop()
     Oy = kartY + 10*sin(kartDirection);
     h = 5;
   }
-  else
-  {
-    // Standard part
-    a = time;
-    Ox = 128;
-    Oy = 128;
-    h = 25+10*sin(time/3);
-  }
+
+
 
   // Optimized view parameters and pre-computed values
   float sina = sin(a);
@@ -248,10 +258,11 @@ void loop()
   FP32 OyFP =   FP32_FROM_FLOAT(Oy);
   FP32 hFP =    FP32_FROM_FLOAT(h);
 
-  // Selects the draw procedure
+  // Selects the DRAW LOOP depending on the part
+  // NOT IN TUTORIAL TEXT
   switch(part)
   {
-    case 0: // Sine deformation ---------------------------------------------------------------
+    case 0: // Picture deformation ---------------------------------------------------------------
     {
       // Loops on each row
       for(int y=0; y<64; y++)
@@ -261,8 +272,8 @@ void loop()
 
         startx = FP32_FROM_FLOAT(-50);
         starty = FP32_FROM_FLOAT((float)y*4.0);
-        incx =   FP32_FROM_FLOAT((1.5+cos(time+(float)y/20.0))*2.0);
-        incy =   FP32_FROM_FLOAT((1.5+sin(time+(float)y/20.0))*2.0);
+        incx =   FP32_FROM_FLOAT((1.5+cos(a+(float)y/20.0))*2.0);
+        incy =   FP32_FROM_FLOAT((1.5+sin(a+(float)y/20.0))*2.0);
 
         destination = drawRow(source, destination, startx, starty, incx, incy, infinite, background);
       }
