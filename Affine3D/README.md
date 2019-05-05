@@ -1,7 +1,6 @@
 
 # :construction: UNDER CONSTRUCTION :construction:
 
-
 # Affine3D
 
 This tutorial follows the first [Affine tutorial](https://gamebuino.com/community/topic/affine-full-screen-picture-zoom-and-rotation), where we saw how to display a full-screen picture with zoom and rotation.
@@ -474,7 +473,7 @@ We then avoid one multiplication by pre-multiplying the `factor` by `h` for the 
     Ix = sina*factor
     Iy = cosa*factor
 
-For the implementation, juste replace the compuation by the following code, which computes directly the fixed-point values:
+For the implementation, just replace the computation by the following code, which computes directly the fixed-point values:
 
 ```C++
           // Computes values for the row
@@ -593,13 +592,13 @@ Even better in infinite mode:
 
 The performance would be even sufficient for a display in high resolution. But well, the main drawback of the technique remains the storage space it requires in the flash memory (half of the total space), and the lack of flexibility.
 
-## Part 7: Tile map
+## Part 7: Tile map setup
 
 The obvious idea now is to replace the 256x256 source picture by a [tile map](https://en.wikipedia.org/wiki/Tiled_rendering). It is more flexible and takes way less storage space.
 
 I designed quickly in [paint.net](https://www.getpaint.net/) this race tile set (hereafter zoomed 3 times). It is not very fancy and the number of tiles is limited but it fulfills the purpose. It contains 8 tiles of 16x16 pixels:
 
-![tileset](pictures/race-tile-set.png)
+![Tileset](pictures/race-tile-set.png)
 
 Note that all tiles are arranged vertically. We will see later that it is necessary for better performance. The size of 16x16 is as well important here, but the number of tiles (here 8) is not. The tile set could contain more tiles without any impact on the performance.
 
@@ -607,15 +606,15 @@ Add the code corresponding to this picture at the beginning of the sketch file, 
 
 ```C++
 const uint16_t raceTileSet[] = {
-	16,     // frame width
-	16,     // frame height
-	8,      // number of frames
-	0,      // animation speed
-	0xf81f, // transparent color
-	0,      // RGB565 color mode
-	// frame 1/8
-	0x5422, 0x5c05, 0x5c05, 0x5c05, 0x5466, 0x5c05, 0x5466, 0x5c05, 0x5c05, 0x5c05, 0x5466, 0x5422, 0x5422, 0x5403, 0x5c25, 0x5c05, 
-	0x5403, 0x5c05, 0x5c05, 0x5c05, 0x5c05, 0x5c05, 0x5422, 0x5c25, 0x5403, 0x5c25, 0x5c05, 0x5c25, 0x5422, 0x5c05, 0x5422, 0x5c05, 
+  16,     // frame width
+  16,     // frame height
+  8,      // number of frames
+  0,      // animation speed
+  0xf81f, // transparent color
+  0,      // RGB565 color mode
+  // frame 1/8
+  0x5422, 0x5c05, 0x5c05, 0x5c05, 0x5466, 0x5c05, 0x5466, 0x5c05, 0x5c05, 0x5c05, 0x5466, 0x5422, 0x5422, 0x5403, 0x5c25, 0x5c05, 
+  0x5403, 0x5c05, 0x5c05, 0x5c05, 0x5c05, 0x5c05, 0x5422, 0x5c25, 0x5403, 0x5c25, 0x5c05, 0x5c25, 0x5422, 0x5c05, 0x5422, 0x5c05, 
 .....
 ```
 
@@ -646,9 +645,11 @@ With the default CSV save format of Tiled, the one-dimensional array containing 
 </data>
 ```
 
-ATTENTION: By convention, in Tiled, the tile number 0 means no tile. In other words, Tiled considers that the first tile has the number 1, and it is unfortunatelly not possible to change this by configuration.
+ATTENTION: By convention, in Tiled, the tile number 0 means no tile. In other words, Tiled considers that the first tile has the number 1, and it is unfortunately not possible to change this by configuration.
 
 In our tile set, the very first tile (grass) has the index 0 according to the C/C++ convention. In order to avoid a subtraction at run-time, for performance, we need to decrement all tile numbers. A quick and dirty solution (that I applied here) is to use a text editor to replace "1" by "0", then "2" by "1" and so on. Such a method is possible with a low number of transformations. Of course a little script would be better if Tiled is used frequently.
+
+Another possibility here would be to add another empty tile at the beginning of the tile set.
 
 After adaptation, the array of bytes is named `raceTileMap`. Add this new constant variable at the beginning of the sketch:
 
@@ -673,7 +674,7 @@ const int8_t raceTileMap[] = {
 };
 ```
 
-At the beginning of the `loop()` function, add the aliase for the tilemap and tileset:
+At the beginning of the `loop()` function, add the aliases for the tile map and tile set raw variables:
 
 ```C++
   // Inits pointers for the tile map
@@ -681,10 +682,150 @@ At the beginning of the `loop()` function, add the aliase for the tilemap and ti
   int8_t* tilemap = (int8_t*)(raceTileMap);
 ```
 
-The classical setup of the tile map is completed. Now the row draw function needs to be adapted.
+The setup of the tile map is completed. This part is very classical and could be re-used in any other tile map based game.
 
+## Part 8: Tile map draw function
 
+Now another difficult part: the row draw function needs to be adapted. Is it possible to keep the same performance when displaying a tile map? Not really because it involves additional operations per pixel, but the result is still good enough.
 
+The size of 16x16 tiles for the tile map, and 16x16 pixels for the tiles leads to a **virtual source picture of 256x256**. Obviously, keeping the same size will help to re-use as much as possible the code written for the bitmap source picture.
+
+The draw principle remains almost the same:
+
+- Same: the `destination` variable points to the frame buffer in `gb.display`, and will be incremented by 1 ("`destination++`") to go from one drawn pixel to the next one in the display buffer
+- Same: the FP32 variables `(x,y)` and `(dx,dy)` are respectively the start point and the increment to go from one pixel to the next one in the virtual source picture along a straight line
+- Same: we check if the pixel to draw is within the source picture by checking that the integer parts of `x` and `y` are between 0 and 255 (i.e. we use the most significant byte and check if it is equal to zero)
+- Same: the `background` Color is used as color if the pixel to draw is outside the source picture, if we draw with picture boundaries check
+- Same: the coordinates of the pixel in the virtual source picture are given by the least significant byte of the integer parts of `x` and `y`, i.e. by definition between 0 and 255
+- Different: once the coordinates between 0 and 255 are determined, we cannot just pick the value in the one-dimensional array `source`
+
+As a summary this is what we need to achieve: given two coordinates `X` and `Y` between 0 and 255, determine the pixel color in the 16x16 tile map `int8_t* tilemap` (one-dimensional array of bytes) given the tile set `Color* tileset` (one-dimensional array of pixel colors, all tiles arranged vertically).
+
+Once again some boolean algebra magic will help.
+
+Let's start by looking at the reverse formula: to get the `(X,Y)` coordinates of a pixel in the virtual source picture, while knowing the `(mx,my)` coordinates in the map and the `(tx,ty)` coordinates in the tile.
+
+As an example, let's take the tile on the top row in second position from the left. This tile is at `(mx=1,my=0)`. Within this tile we check the pixel at `(tx=5,ty=5)`. The `X` coordinate is `X=16+5=21` because we need to skip the first tile with size 16. The `Y` coordinate of this pixel is `Y=5` because we are on the first row of tiles on the top.
+
+The general formulas to get the pixel coordinates can be written as:
+
+    X = mx*16 + tx
+    Y = my*16 + ty
+
+Now we can re-write this formula with bit-shifts, because 16=2^4 and a multiplication by a power of 2 is a bit-shift (using the [C/C++ left-shift operator](https://en.wikipedia.org/wiki/Bitwise_operations_in_C)):
+
+    X = mx<<4 + tx
+    Y = my<<4 + ty
+
+We know that `tx` and `ty` are between 0 and 15 (due to the tile size of 16x16), so they fit on 4 bits. As a result, we can notice that `tx` and `ty` are located on the 4 least significant bits of `X` and `Y`, while `mx` and `my`, as well fitting on 4 bits, are on the 4 most significant bits due to the left-shift.
+
+And this is the trick: given a pixel coordinate in the virtual source picture of a 16x16 tile map with tiles of 16x16 pixels, **the tile coordinate is on the 4 most significant bits, and the pixel coordinate within the tile is on the 4 least significant bits**.
+
+Half a byte is sometimes called a [nibble](https://en.wikipedia.org/wiki/Nibble).
+
+Some examples (note that the hexadecimal representation gives immediately the nibble values):
+
+| Pixel coordinate decimal | Hexadecimal | Binary | Tile coordinate i.e. most significant nibble| Pixel coordinate within tile i.e. least significant nibble|
+|----|----|----|----|----|
+|21|0x15|0b00010101|1|5|
+|5|0x05|0b00000101|0|5|
+|255|0xFF|0b11111111|15|15|
+|140|0x8C|0b10001100|8|12|
+
+Now that we understand how to determine the coordinates in map and tile, let's see how to determine them. We need bit-masking and bit-shifts. If you are not familiar with that, have a look at the [Wikipedia page on bitwise operations](https://en.wikipedia.org/wiki/Bitwise_operations_in_C).
+
+To get the least significant nibbles, we just need to mask the 4 most significant bits with a bitwise AND operation. A "0" in the mask means that the bit is masked i.e. the bitwise result is always 0, a "1" means that the bit is kept i.e. the bitwise result is the value of the original bit):
+
+    tx = X & 0b00001111
+    ty = Y & 0b00001111
+
+To get the most significant nibbles, a right-shit is sufficient, as it drops the least significant bits:
+
+    mx = X >> 4
+    my = Y >> 4
+
+Then, because we have a one-dimensional tile map array of 16x16 tiles, the "map offset" is computed by:
+
+    mo = my*16 + mx = (my<<4) + mx
+
+or:
+
+    mo = ((Y>>4)<<4) + (X>>4)
+
+This can be in turn simplified because `my` is the result of a right-shift and now we have a left-shift. But attention, the first right-shift was used to drop the bits on the right, so on `Y` we have no shift but we need to drop the least significant nibble by masking them (hence one operation on `Y` instead of two):
+
+    mo = (Y & 0b11110000) + (X>>4)
+
+That's it for the map offset. Then we get the current "tile number" by picking it in the array at this offset:
+
+    tn = tilemap[mo]
+
+The final step is now to pick the correct pixel color in the tile set. The tiles are arranged vertically so the "tile offset" in the one-dimensional array `tileset` is given by pointing on the offset of the tile `tn` (starting at 0, the size of one tile is 16x16=256 pixels), then adding the offset of `ty` rows (size 16 pixels), then adding the offset of `tx`:
+
+    to = tn*256 + ty*16 + tx
+
+Expressed with bit-shifts:
+
+    to = (tn<<8) + (ty<<4) + tx
+
+Or:
+
+    to = (tn<<8) + ((Y & 0b00001111)<<4) + (X & 0b00001111)
+
+And finally we get the pixel color to draw from:
+
+    color = tileset[to]
+
+The C++ implementation reflects all these definitions all put together, with a cast to `int16_t` on `to` to be sure that the resulting value in not encoded on a byte:
+
+```C++
+tileset[ (((int16_t)tilemap[(FP32_LSBYTE(x)>>4) + (FP32_LSBYTE(y) & 0b11110000)])<<8) +
+  (FP32_LSBYTE(x) & 0b00001111) + ((FP32_LSBYTE(y) & 0b00001111)<<4) ]
+```
+
+And to conclude, this is the complete function:
+
+```C++
+// Draws one row of 80 pixels at destination using pixel colors from the tilemap 16x16 tiles of 16x16 pixels,
+// starting at (x,y) in the virtual picture and incremented at each pixel by (dx, dy)
+Color* drawRowTileMap(Color* tileset, int8_t* tilemap, Color* destination, FP32 x, FP32 y, FP32 dx, FP32 dy,
+                      bool infinite=true, Color background=BLACK)
+{
+  // Repeat 80 times the same instructions without boundaries test if infinite
+  if (infinite)
+  {
+    REPEAT80(
+      *destination++ = tileset[ (((int16_t)tilemap[(FP32_LSBYTE(x)>>4) + (FP32_LSBYTE(y) & 0b11110000)])<<8)
+                                 + (FP32_LSBYTE(x) & 0b00001111) + ((FP32_LSBYTE(y) & 0b00001111)<<4) ];
+      x += dx; y += dy;
+    )
+  }
+  
+  // Repeat 80 times the same instructions with boundaries test
+  else
+  {
+    REPEAT80(
+      if (FP32_MSBYTE(x)!=0 || FP32_MSBYTE(y)!=0)
+        *destination++ = background;
+      else
+        *destination++ = tileset[ (((int16_t)tilemap[(FP32_LSBYTE(x)>>4) + (FP32_LSBYTE(y) & 0b11110000)])<<8)
+                                 + (FP32_LSBYTE(x) & 0b00001111) + ((FP32_LSBYTE(y) & 0b00001111)<<4) ];
+      x += dx; y += dy;
+    )
+  }
+
+  // Returns the last value of destination, now pointing on the first pixel of the next row
+  return destination;
+}
+```
+
+Replace the call to the draw function in the draw loop with:
+
+```C++
+// Draws row
+destination = drawRowTileMap(tileset, tilemap destination, startx, starty,
+    incx, incy, infinite, background);
+```
 
 The result is very promising, here with picture boundaries check:
 
@@ -694,8 +835,19 @@ In infinite mode:
 
 ![tilemap-infinite](pictures/tilemap-infinite-big.gif)
 
+In infinite draw mode we almost doubled the draw duration from about 6.2 ms to 11.3 ms. The performance loss is high but the function remains very usable. Given the advantages of a tile map, it is definitely worth doing that way.
 
 ## Part 8: Kart mini-game
+
+Well, finally we have something that looks like a game!
+
+To make it more fun, we will add a kart on the screen and control it with the Gamebuino buttons and pad. This no complete game. It just put the basics in place to check the performance.
+
+
+
+
+
+![kart1](pictures/kart1-infinite-big.gif)
 
 ![kart1](pictures/kart1-big.gif)
 
