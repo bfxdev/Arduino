@@ -434,6 +434,58 @@ In infinite mode, i.e. without picture boundaries check:
 
 ## Part 5: First optimization with floats
 
+The implementation in the previous part is such that the complete formulas are computed at each line. A first obvious optimzation is to separate what can be computed once per frame.
+
+From the part 3, the original formulas are:
+
+    Dx = Ox + s*h*cos(a)/y - w*h*sin(a)/y
+    Dy = Oy - s*h*sin(a)/y - w*h*cos(a)/y
+    Ix = h*sin(a)/y
+    Iy = h*cos(a)/y
+
+All variables are constant for the frame except `y`, so we can simplify.
+
+First let's get the trigonometry values in `sina` and `cosa`:
+
+    sina = sin(a)
+    cosa = cos(a)
+
+Then we gather the factors divided by `y`:
+
+    Ax = h*( s*cosa - w*sina)
+    Ay = h*(-s*sina - w*cosa)
+
+Such that:
+
+    Dx = Ox + Ax/y
+    Dy = Oy + Ay/y
+    Ix = h*sina/y
+    Iy = h*cosa/y
+
+And then, because division is the slowest operation (following the remarks of Alban), we will prefer to multiply by the invert of `y`, called `factor`.
+
+    factor = 1/y
+    Dx = Ox + Ax*factor
+    Dy = Oy + Ay*factor
+
+We then avoid one multiplication by pre-multiplying the `factor` by `h` for the computation of `incx` and `incy`:
+
+    factor = factor*h
+    Ix = sina*factor
+    Iy = cosa*factor
+
+For the implementation, juste replace the compuation by the following code, which computes directly the fixed-point values:
+
+```C++
+          // Computes values for the row
+          float factor = 1/(float)y;
+          startx = FP32_FROM_FLOAT(Ox + Ax*factor);
+          starty = FP32_FROM_FLOAT(Oy + Ay*factor);
+          factor *= h;
+          incx = FP32_FROM_FLOAT(sina*factor);
+          incy = FP32_FROM_FLOAT(cosa*factor);
+```
+
 The result is already acceptable, here with picture boundaries check:
 
 ![float2](pictures/float2-big.gif)
@@ -442,14 +494,11 @@ In infinite mode:
 
 ![float2-infinite](pictures/float2-infinite-big.gif)
 
-
 ## Part 6: Optimization with fixed-point arithmetic
 
-As a reminder, to encode a floating-point value into a fixed-point integer value we shift the bits to the left, or multiply by a power of 2, such that the fractional part moves to the integer part. Then we convert to an integer, removing the fractional part. For example,  if `aFP` is the encoded value of `a`, with 16 bits precision after the dot:
+Now this is a difficult part. To improve the performance further, we can replace the float operations by fixed-point arithmetic. For that, we will have to look at multiplication and division in fixed point. It sounds more difficult than it is in reality.
 
-```C++
-aFP.asInt32 = (int32_t)(65536.0*a);
-```
+As a reminder, to encode a floating-point value into a fixed-point integer value we multiply by `F=2^16=65536`, such that the fractional part moves to the integer part. Then we convert to an integer, removing the fractional part.
 
 In this section we will use capital letters for fixed-point encoded values, and small letters for their float equivalents. We will also consider that the remaining fractional part, cut while converting to an integer, is neglectible. As a result, we do not need to take the integer conversion into account.
 
@@ -473,15 +522,18 @@ Or:
 
 It means that after multiplying the 2 integer values, we need to shift the result to re-align it to the dot. This implies that the result of `A * B` is encoded on 64 bits.
 
-There is a trick to perform just a 32-bits multiplication, even if we lose some precision: before the multiplication, we can pre-shift `A` and `B`. I used that in Fractalino. Let's define `G` as the factor representing a half-shift (here it is equal to 256), i.e. such that:
+For the implementation of the multiplication of two fixed-point values (already converted):
 
-    F = G*G
+- First we need to convert the two factors to the `int64_t` type, such that the multiplication itself is done on 64 bits
+- Then the multiplication is performed, with a 64-bits result
+- Finally a bitshift of 16 bits to the right is applied
 
-Replacing it in the multiplication formula:
+For the implementation, add the following macro at the beginning of the .ino file, which reflects exactly these steps:
 
-    C = (A/G) * (B/G)
-
-Mathematically it makes no difference, but allows to first shift our values to 16-bits integers, losing the most-significant bits that would anyway overflow, and then multiply and get directly the 32-bits value.
+```C++
+// FP32 macro to multiply two FP32 values
+#define FP32_MUL(A,B) ( (FP32) (( ((int64_t)(A)) * ((int64_t)(B)) ) >> 16L) )
+```
 
 Now let's look at the **division of fixed-point values**. We search `C`, encoded value of `c`, such that:
 
@@ -497,10 +549,41 @@ Or:
 
 It means that before dividing, we need to pre-shift `A` on 64 bits.
 
-TBD
+The steps for the implementation of the division are then very similar to the ones for the multiplication. Add the following macro to the beginning of the .ino file:
 
+```C++
+// FP32 macro to divide two FP32 values
+#define FP32_DIV(A,B) ( (FP32) (( ((int64_t)(A)) << 16L )/(B)) )
+```
 
-The result is already acceptable, here with picture boundaries check:
+Now let's use the macros to adapt the draw loop. First, add the conversion to FP32 of all relevant variables in the `loop()` function, just after the definition of `Ax` and `Ay`:
+
+```C++
+  // Inits fixed-point equivalent variables for the frame
+  FP32 sinaFP = FP32_FROM_FLOAT(sina);
+  FP32 cosaFP = FP32_FROM_FLOAT(cosa);
+  FP32 AxFP =   FP32_FROM_FLOAT(Ax);
+  FP32 AyFP =   FP32_FROM_FLOAT(Ay);
+  FP32 OxFP =   FP32_FROM_FLOAT(Ox);
+  FP32 OyFP =   FP32_FROM_FLOAT(Oy);
+  FP32 hFP =    FP32_FROM_FLOAT(h);
+```
+
+Then replace the computation of `startx` etc in the draw loop:
+
+```C++
+          // Computes values for the row
+          FP32 factorFP = FP32_DIV(1<<16 , y<<16);
+          startx = OxFP + FP32_MUL(AxFP, factorFP);
+          starty = OyFP + FP32_MUL(AyFP, factorFP);
+          factorFP = FP32_MUL(factorFP, hFP);
+          incx = FP32_MUL(sinaFP, factorFP);
+          incy = FP32_MUL(cosaFP, factorFP);
+```
+
+Note that we convert here `1` and `y` inline, this is the same as using the conversion macro. For this very particular division, which is more an inversion, there are certainly additional simplifications I did not thin about, but this would not change much the final performance.
+
+And the result is incredibly quick!!
 
 ![fixed](pictures/fixed-big.gif)
 
@@ -508,18 +591,100 @@ Even better in infinite mode:
 
 ![fixed-infinite](pictures/fixed-infinite-big.gif)
 
-
-
+The performance would be even sufficient for a display in high resolution. But well, the main drawback of the technique remains the storage space it requires in the flash memory (half of the total space), and the lack of flexibility.
 
 ## Part 7: Tile map
 
-We use this tile set:
+The obvious idea now is to replace the 256x256 source picture by a [tile map](https://en.wikipedia.org/wiki/Tiled_rendering). It is more flexible and takes way less storage space.
+
+I designed quickly in [paint.net](https://www.getpaint.net/) this race tile set (hereafter zoomed 3 times). It is not very fancy and the number of tiles is limited but it fulfills the purpose. It contains 8 tiles of 16x16 pixels:
 
 ![tileset](pictures/race-tile-set.png)
 
-Using the Tiled editor, we get this map:
+Note that all tiles are arranged vertically. We will see later that it is necessary for better performance. The size of 16x16 is as well important here, but the number of tiles (here 8) is not. The tile set could contain more tiles without any impact on the performance.
+
+Add the code corresponding to this picture at the beginning of the sketch file, after transformation e.g. with the [image transcoder](https://gamebuino.com/creations/image-transcoder) by [Steph](https://gamebuino.com/@Steph), in mode RGB565 (code shortened here):
+
+```C++
+const uint16_t raceTileSet[] = {
+	16,     // frame width
+	16,     // frame height
+	8,      // number of frames
+	0,      // animation speed
+	0xf81f, // transparent color
+	0,      // RGB565 color mode
+	// frame 1/8
+	0x5422, 0x5c05, 0x5c05, 0x5c05, 0x5466, 0x5c05, 0x5466, 0x5c05, 0x5c05, 0x5c05, 0x5466, 0x5422, 0x5422, 0x5403, 0x5c25, 0x5c05, 
+	0x5403, 0x5c05, 0x5c05, 0x5c05, 0x5c05, 0x5c05, 0x5422, 0x5c25, 0x5403, 0x5c25, 0x5c05, 0x5c25, 0x5422, 0x5c05, 0x5422, 0x5c05, 
+.....
+```
+
+Then I used the [Tiled editor](https://www.mapeditor.org/) to build a map. First a tileset must be created (extension `.tsx` in Tiled), then the map can be drawn and saved (extension `tmx` in Tiled). Here is the result:
 
 ![tileset](pictures/race-tile-map.png)
+
+With the default CSV save format of Tiled, the one-dimensional array containing the tile numbers appears clearly in the `.tmx` file:
+
+```XML
+  <data encoding="csv">
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,
+1,1,4,2,2,2,2,2,2,2,2,2,2,2,6,1,
+1,1,5,2,6,1,1,1,1,1,1,1,1,1,3,1,
+1,1,1,1,3,1,1,1,1,1,1,1,1,1,3,1,
+1,4,2,2,7,1,1,1,1,1,1,1,1,1,3,1,
+1,3,1,1,1,1,1,1,1,1,1,1,1,1,3,1,
+1,3,1,1,4,2,2,2,6,1,4,2,6,1,3,1,
+1,3,1,1,3,1,1,1,3,1,3,4,7,4,7,1,
+1,8,1,1,3,1,1,1,3,1,3,3,1,5,6,1,
+1,3,1,1,3,1,1,4,7,1,3,3,1,1,3,1,
+1,3,1,1,5,6,1,3,1,1,3,3,1,1,3,1,
+1,3,1,1,1,3,1,3,1,1,3,5,2,2,7,1,
+1,3,1,1,1,3,1,3,1,1,3,1,1,1,1,1,
+1,3,1,1,1,3,1,3,1,1,5,2,2,2,6,1,
+1,5,2,2,2,7,1,5,2,2,2,2,2,2,7,1,
+1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1
+</data>
+```
+
+ATTENTION: By convention, in Tiled, the tile number 0 means no tile. In other words, Tiled considers that the first tile has the number 1, and it is unfortunatelly not possible to change this by configuration.
+
+In our tile set, the very first tile (grass) has the index 0 according to the C/C++ convention. In order to avoid a subtraction at run-time, for performance, we need to decrement all tile numbers. A quick and dirty solution (that I applied here) is to use a text editor to replace "1" by "0", then "2" by "1" and so on. Such a method is possible with a low number of transformations. Of course a little script would be better if Tiled is used frequently.
+
+After adaptation, the array of bytes is named `raceTileMap`. Add this new constant variable at the beginning of the sketch:
+
+```C++
+const int8_t raceTileMap[] = {
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,
+0,0,3,1,1,1,1,1,1,1,1,1,1,1,5,0,
+0,0,4,1,5,0,0,0,0,0,0,0,0,0,2,0,
+0,0,0,0,2,0,0,0,0,0,0,0,0,0,2,0,
+0,3,1,1,6,0,0,0,0,0,0,0,0,0,2,0,
+0,2,0,0,0,0,0,0,0,0,0,0,0,0,2,0,
+0,2,0,0,3,1,1,1,5,0,3,1,5,0,2,0,
+0,2,0,0,2,0,0,0,2,0,2,3,6,3,6,0,
+0,7,0,0,2,0,0,0,2,0,2,2,0,4,5,0,
+0,2,0,0,2,0,0,3,6,0,2,2,0,0,2,0,
+0,2,0,0,4,5,0,2,0,0,2,2,0,0,2,0,
+0,2,0,0,0,2,0,2,0,0,2,4,1,1,6,0,
+0,2,0,0,0,2,0,2,0,0,2,0,0,0,0,0,
+0,2,0,0,0,2,0,2,0,0,4,1,1,1,5,0,
+0,4,1,1,1,6,0,4,1,1,1,1,1,1,6,0,
+0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0
+};
+```
+
+At the beginning of the `loop()` function, add the aliase for the tilemap and tileset:
+
+```C++
+  // Inits pointers for the tile map
+  Color* tileset = (Color*)(raceTileSet+6);
+  int8_t* tilemap = (int8_t*)(raceTileMap);
+```
+
+The classical setup of the tile map is completed. Now the row draw function needs to be adapted.
+
+
+
 
 The result is very promising, here with picture boundaries check:
 
