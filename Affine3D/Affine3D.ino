@@ -181,10 +181,8 @@ bool infinite=false;
 float s, h, w, Ox, Oy;
 int firstRow = 1;
 
-// Kart variables
-float kartSpeed, kartDirection, kartX, kartY;
-
-
+// Kart variables anf initial values
+float kartSpeed=0, kartDirection=PI/2, kartX=24, kartY=136;
 
 void loop()
 {
@@ -234,7 +232,7 @@ void loop()
   // NOT IN TUTORIAL TEXT
   if (part==5)
   {
-    // Kart part
+    // Sets observer position and viewpoint from kart parameters
     a = kartDirection;
     Ox = kartX - 10*cos(kartDirection);
     Oy = kartY + 10*sin(kartDirection);
@@ -444,6 +442,8 @@ void loop()
         kartSpeed += 0.15;
       if (gb.buttons.repeat(BUTTON_DOWN,0))
         kartSpeed -= 0.05;
+
+      // Simulates air drag
       kartSpeed *= 0.9;
 
       // Manages direction

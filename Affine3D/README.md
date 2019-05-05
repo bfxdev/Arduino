@@ -843,17 +843,121 @@ Well, finally we have something that looks like a game!
 
 To make it more fun, we will add a kart on the screen and control it with the Gamebuino buttons and pad. This no complete game. It just put the basics in place to check the performance.
 
+We use this marvelous 32x28 picture based on a screenshot of a [Lego kart 3D model](https://sketchfab.com/3d-models/lego-system-3056-go-kart-f249ae60d5b341ed922289ec312d9371) from behind, and then edited pixel-by-pixel with paint.net (and here zoomed 4 times):
 
+![kart-lego](pictures/kart-lego.png)
 
+As usual, use an online picture-to-code conversion tool, with the classical transparent color `0xf81f`, and put the code at the top of the sketch file, name the image  `KartLego` (code shortened here):
 
+```C++
+const uint16_t KartLegoData[] = {
+	32,     // frame width
+	28,     // frame height
+	1,      // number of frames
+	0,      // animation speed
+	0xf81f, // transparent color
+	0,      // RGB565 color mode
+	// frame 1/1
+	0xf81f, 0xf81f, 0xf81f, 0xf81f, 0xf81f, 0xf81f, 0xf81f .....
+};
+
+Image KartLego = Image(KartLegoData);
+```
+
+Now add the static display of this picture just after the draw of the tile map:
+
+```C++
+  gb.display.drawImage(24, 30, KartLego);
+```
+
+Note that this picture is only displayed for decoration. It does not move and is not animated. Its position is such that it is centered horizontally, and vertically the position is rather subjective (but it could be calculated to match the perspective of the kart).
+
+Now for the control, before the `loop()` function, add the definition of the kart speed, direction and position:
+
+```C++
+// Kart variables anf initial values
+float kartSpeed=0, kartDirection=PI/2, kartX=24, kartY=136;
+```
+
+Here the initial values are integrated to the definition for simplicity (in a real game, depending on the game state, they need to be changed or reset).
+
+The position of the kart `(kartX, kartY)` is directly in the coordinates system of the 256x256 source picture or tile map.
+
+The `kartDirection` is simply a radian angle similar to `a`.
+
+The `kartSpeed` is expressed in pixels per frame. It is the quantity added to the kart position at each frame.
+
+In the `loop()` function, before the `sina`, `cosa`, etc computation, add the following code to compute the position and view direction of the observer from the kart values:
+
+```C++
+  // Sets observer position and viewpoint from kart parameters
+  a = kartDirection;
+  Ox = kartX - 10*cos(kartDirection);
+  Oy = kartY + 10*sin(kartDirection);
+  h = 5;
+```
+
+The view direction of the observer `a` receives directly the `kartDirection`. The distance `h` between observer and source picture is set to 5 to place the view nearer the road (it is a kart not an airplane).
+
+Regarding the position `(Ox,Oy)`, it is equal to the kart position, plus a small offset in the reverse direction of the kart. Consequently, when the `kartDirection` changes, the center of rotation is just under the wheels of the display kart picture, and not under the observer. This is necessary to give the impression that the kart is turning and not flying laterally.
+
+Here again, the value of `10` was found empirically. In a full-featured 3D game, the camera would follow the kart object and this adjustment would be implicit.
+
+Finally, we add the controls. The direction is directly controlled by the buttons LEFT and RIGHT. Add the code at the end of the `loop()` function:
+
+```C++
+  // Manages direction
+  if (gb.buttons.repeat(BUTTON_LEFT,0))
+    kartDirection += 0.06;
+  if (gb.buttons.repeat(BUTTON_RIGHT,0))
+    kartDirection -= 0.06;
+```
+
+For the speed, deceleration or reverse gear will be controlled by the button DOWN. Acceleration will be controlled by the buttons UP and as well A to ease control. Pressing both UP and A at the same time is possible for high speed.
+
+```C++
+  // Manages speed
+  if (gb.buttons.repeat(BUTTON_A,0))
+    kartSpeed += 0.12;
+  if (gb.buttons.repeat(BUTTON_UP,0))
+    kartSpeed += 0.15;
+  if (gb.buttons.repeat(BUTTON_DOWN,0))
+    kartSpeed -= 0.05;
+```
+
+Physically, the speed cannot increase for ever. There is always friction with the surrounding air such that the kart would decelerate and finally stop if no acceleration is applied. We simulate this friction by taking 90% of the speed after the acceleration. Add the following code just after the A/UP/DOWN control code:
+
+```C++
+  // Simulates air drag
+  kartSpeed *= 0.9;
+```
+
+As a side note, this drag parameter, combined with the acceleration given by pressing A (or UP or both), have a direct influence on the maximum speed of the kart. The computation reaches a steady-state when the multiplication by 0.9 counterbalances the addition of 0.12.
+
+Finally, the kart position is updated by adding to the current position the vector of length `kartSpeed`, with an angle of `kartDirection`:
+
+```C++
+  // Updates position
+  kartX +=  kartSpeed*cos(kartDirection);
+  kartY += -kartSpeed*sin(kartDirection);
+```
+
+Note that all these values 0.12, 0.9, etc are largely determined empirically. It gives a good or bad feeling when playing. So it is necessary to spend time on the choice of such values, but it would be difficult to explain or compute them.
+
+Now everything is written. The mini-game is very nice to play, enjoy!!
+
+Here with infinite picture draw:
 
 ![kart1](pictures/kart1-infinite-big.gif)
 
+With picture boundaries check, it is cool to go off-road on the edge of the play area (but no, there is no free fall implemented, the kart would start to fly in the blue if going outside):
+
 ![kart1](pictures/kart1-big.gif)
 
-![kart1](pictures/kart2-big.gif)
+## Part 9: Conclusion
 
+Well, this tutorial is very long!! I hope you understand now better how to use bits and bytes and boolean algebra to write such optimized draw functions.
 
+The obvious next step now is to continue the kart mini-game by adding a full-rotation of the player, several opponents, collisions, jumps, banana peels, different race tracks, etc.. This is only the beginning..
 
 That's all folks!
-
