@@ -1,6 +1,4 @@
 
-# :construction: UNDER CONSTRUCTION :construction:
-
 # Affine3D
 
 This tutorial follows the first [Affine tutorial](https://gamebuino.com/community/topic/affine-full-screen-picture-zoom-and-rotation), where we saw how to display a full-screen picture with zoom and rotation.
