@@ -11,9 +11,9 @@ This text is a technical article more than a real tutorial, but a couple of twea
 Here is a list of the software versions used in this tutorial:
 
 - Arduino IDE version 1.8.9
-- Arduino SAMD Board (32-bits ARM Cortex-M0+) version 1.6.20
-- Gamebuino META Board version 1.2.1
-- Gamebuino Library version 1.3.1
+- Arduino SAMD Board (32-bits ARM Cortex-M0+) version 1.8.1
+- Gamebuino META Board version 1.2.2
+- Gamebuino Library version 1.3.2
 
 Obviously, with other versions, the content of this tutorial may need to be adapted.
 
@@ -76,9 +76,9 @@ Under the `packages` folder, we will find the user-downloaded boards, where each
 
 In each board sub-folder, we find _again_ the same kind of files as in the Arduino IDE folder. The following files and folders are part of the Gamebuino META board:
 
-- `PACKAGES_PATH/gamebuino/hardware/samd/1.2.1/platform.txt`: definition of the tools and command options used in the build process
-- `PACKAGES_PATH/gamebuino/hardware/samd/1.2.1/cores/arduino`: main folder with the "core" definition of the Gamebuino, containing for example the applicable `Arduino.h` file
-- `PACKAGES_PATH/gamebuino/hardware/samd/1.2.1/libraries`: low-level libraries adapted to the Gamebuino board:
+- `PACKAGES_PATH/gamebuino/hardware/samd/1.2.2/platform.txt`: definition of the tools and command options used in the build process
+- `PACKAGES_PATH/gamebuino/hardware/samd/1.2.2/cores/arduino`: main folder with the "core" definition of the Gamebuino, containing for example the applicable `Arduino.h` file
+- `PACKAGES_PATH/gamebuino/hardware/samd/1.2.2/libraries`: low-level libraries adapted to the Gamebuino board:
   - `SPI`: the [Serial Peripheral Interface](https://www.arduino.cc/en/reference/SPI), used to communicate with the TFT display
   - `HID`: USB [HID library](https://www.arduino.cc/en/Reference/HID), allowing the board to become a [USB Human Interface Device](https://en.wikipedia.org/wiki/USB_human_interface_device_class)
   - `Wire`: the [Wire library](https://www.arduino.cc/en/Reference/Wire), used for communication with I2C / TWI devices
@@ -92,14 +92,14 @@ The SAMD Board folder at `PACKAGES_PATH/arduino` is apparently the basis of the 
 - `PACKAGES_PATH/arduino/tools/openocd`: Used for on-chip debug (I personally never used it)
 - `PACKAGES_PATH/arduino/tools/CMSIS`: Libraries of the vendor-unspecific [Cortex Microcontroller Software Interface Standard (CMSIS)](www.arm.com/cmsis) created by ARM (I have to try the fast DSP math functions)
 - `PACKAGES_PATH/arduino/tools/CMSIS-Atmel`: CMSIS vendor-specific files for [ATMEL Smart-ARM (SAM) processors](https://en.wikipedia.org/wiki/Atmel_ARM-based_processors)
-- `PACKAGES_PATH/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1`: the [GNU ARM Embedded Toolchain](https://launchpad.net/gcc-arm-embedded) with the [GNU binutils](https://www.gnu.org/software/binutils/) plus [GCC](https://gcc.gnu.org/) and many other libraries and include folders..
+- `PACKAGES_PATH/arduino/tools/arm-none-eabi-gcc/7-2017q4`: the [GNU ARM Embedded Toolchain](https://launchpad.net/gcc-arm-embedded) with the [GNU binutils](https://www.gnu.org/software/binutils/) plus [GCC](https://gcc.gnu.org/) and many other libraries and include folders..
 
-This folder requires some deeper analysis. In `PACKAGES_PATH/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1` you will find:
+This folder requires some deeper analysis. In `PACKAGES_PATH/arduino/tools/arm-none-eabi-gcc/7-2017q4` you will find:
 
 - `bin/arm-none-eabi-g++.exe`: this is the compiler executable, part of the [GNU ARM Embedded Toolchain](https://developer.arm.com/open-source/gnu-toolchain/gnu-rm). The strange name says that the tool generates object files compliant with the Embedded [Application Binary Interface (ABI)](https://developer.arm.com/products/architecture/system-architectures/software-standards/abi). The GCC compiler comes with a very [long list of options on the command line](https://manned.org/arm-none-eabi-g++).
-- `lib/gcc/arm-none-eabi/4.8.3/include`: basis include files containing, e.g. `stdint.h` or `stdbool.h`, which may contain `#include_next` lines, saying to the pre-processor to seach the given file in the next include folder
+- `lib/gcc/arm-none-eabi/7.2.1/include`: basis include files containing, e.g. `stdint.h` or `stdbool.h`, which may contain `#include_next` lines, saying to the pre-processor to seach the given file in the next include folder
 - `arm-none-eabi/include`: next folder with again system includes, e.g. another version of `stdint.h`
-- `arm-none-eabi\include\c++\4.8.3`: C++ specific includes e.g. triggered by including [`cstddef`](http://www.cplusplus.com/reference/cstddef/)
+- `arm-none-eabi/include/c++/7.2.1`: C++ specific includes e.g. triggered by including [`cstddef`](http://www.cplusplus.com/reference/cstddef/)
 
 As a side note, to conclude this section, be aware that _the `packages` folder does include executables_! When installing a board, it is not clear that additional executables are downloaded. Under Windows, the location in `C:\Users\[UserName]\AppData\Local` may lead to strange effects (interferences with antivirus, difficulties with backup, etc). I would recommend building a portable version of the Arduino IDE if issues arise.
 
@@ -172,7 +172,7 @@ To conclude this section, I could not find any description of the parameters of 
 
 Normally the build process keeps only .o files (object files, i.e. compiled code before link pass) and .d files (text files listing the dependencies). Additional files can be saved as well, that can be important for debugging. To do so:
 
-- Find the folder of the applicable `platform.txt` file, normally at `PACKAGES_PATH/gamebuino/hardware/samd/1.2.1`. As explained in this file, you can either modify the `platform.txt` file directly or, if you prefer, create a `platform.local.txt` file in the same folder for some settings We choose here the first method for simplicity.
+- Find the folder of the applicable `platform.txt` file, normally at `PACKAGES_PATH/gamebuino/hardware/samd/1.2.2`. As explained in this file, you can either modify the `platform.txt` file directly or, if you prefer, create a `platform.local.txt` file in the same folder for some settings We choose here the first method for simplicity.
 - Edit the `platform.txt` file and change this line as following:
 `compiler.cpp.extra_flags=-save-temps=obj`
 - Re-compile you sketch and look at the build folder
@@ -188,7 +188,7 @@ In addition to the different `#define` macros in the source code, some macros ar
 
 It is possible to list the definition of such macros:
 
-- Go to the folder at `PACKAGES_PATH/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1/bin`
+- Go to the folder at `PACKAGES_PATH/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin`
 - Create an empty file named with the extension `.cpp`. For the rest of this section we will assume that this file is named `C:\Temp\empty.cpp`, doing that under Windows.
 - Execute `arm-none-eabi-g++.exe -dM -E C:\Temp\empty.cpp` to get a list of the pre-defined macros in a non-specific environment. The `-E` option tells GCC to use the pre-processor only, and the `-dM` to display the macros. As explained on the [list of pre-processor options](https://gcc.gnu.org/onlinedocs/gcc/Preprocessor-Options.html), it _generates a list of `#define` directives for all the macros defined during the execution of the preprocessor_. But because the file is empty, the output is limited to pre-defined macros.
 
@@ -199,13 +199,13 @@ Now, it gives a long list of `#define` instructions, but it does not reflect the
 - Compile a sketch with verbose output (in the _File > Preferences_ dialog, activate the box _Show verbose output during: compilation_.)
 - Search the string _Compiling sketch..._ in the compilation output and look at the long compilation command on the next line.
 - Copy the text of the command in a command window and remove the `-o [filename]` option (destination object file), remove the `-I[filename]` options (include files would pollute the output with additional macros), replace the `[sketch_name].ino.cpp` by `C:\Temp\empty.cpp` and add `-E -dM` to list the macros. At the end, under Windows for the user `bfx`, the command will look like this (raw):
-`C:\\Users\\bfx\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\arm-none-eabi-gcc\\4.8.3-2014q1/bin/arm-none-eabi-g++" -mcpu=cortex-m0plus -mthumb -c -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD "-D__SKETCH_NAME__=\"\"\"Fractalino.ino\"\"\"" -DF_CPU=48000000L -DARDUINO=10808 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -save-temps=obj -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON "-DUSB_MANUFACTURER=\"Arduino LLC\"" "-DUSB_PRODUCT=\"Arduino Zero\"" C:\Temp\empty.cpp -E -dM`
+`C:\\Users\\bfx\\AppData\\Local\\Arduino15\\packages\\arduino\\tools\\arm-none-eabi-gcc\\7-2017q4/bin/arm-none-eabi-g++" -mcpu=cortex-m0plus -mthumb -c -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD "-D__SKETCH_NAME__=\"\"\"Fractalino.ino\"\"\"" -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -save-temps=obj -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON "-DUSB_MANUFACTURER=\"Arduino LLC\"" "-DUSB_PRODUCT=\"Arduino Zero\"" C:\Temp\empty.cpp -E -dM`
 - Execute the adapted command
 
 Now the command shows the **exhaustive list of macros that are not defined in the source code**, composed of:
 
 - Macros pre-defined by GCC
-- Macros defined on the compilation command line by the options `-D[name]=[value]` (like `-DARDUINO=10808` meaning that the Arduino IDE version _1.8.8_ is used)
+- Macros defined on the compilation command line by the options `-D[name]=[value]` (like `-DARDUINO=10809` meaning that the Arduino IDE version _1.8.9_ is used)
 
 The same kind of trick can be used to **list include files** for a sketch:
 
@@ -217,12 +217,12 @@ The list of include files is displayed on the standard error stream, so if you w
 The output looks like this (absolute path and extra backslashes removed for readability). The indentation with dots shows the include level:
 
 ```
-. packages\gamebuino\hardware\samd\1.2.1\cores\arduino/Arduino.h
-.. packages\arduino\tools\arm-none-eabi-gcc\4.8.3-2014q1\lib\gcc\arm-none-eabi\4.8.3\include\stdbool.h
-.. packages\arduino\tools\arm-none-eabi-gcc\4.8.3-2014q1\lib\gcc\arm-none-eabi\4.8.3\include\stdint.h
-... packages\arduino\tools\arm-none-eabi-gcc\4.8.3-2014q1\arm-none-eabi\include\stdint.h
-.... packages\arduino\tools\arm-none-eabi-gcc\4.8.3-2014q1\arm-none-eabi\include\machine\_default_types.h
-..... packages\arduino\tools\arm-none-eabi-gcc\4.8.3-2014q1\arm-none-eabi\include\sys\features.h
+. packages\gamebuino\hardware\samd\1.2.2\cores\arduino/Arduino.h
+.. packages\arduino\tools\arm-none-eabi-gcc\7-2017q4\lib\gcc\arm-none-eabi\7.2.1\include\stdbool.h
+.. packages\arduino\tools\arm-none-eabi-gcc\7-2017q4\lib\gcc\arm-none-eabi\7.2.1\include\stdint.h
+... packages\arduino\tools\arm-none-eabi-gcc\7-2017q4\arm-none-eabi\include\stdint.h
+.... packages\arduino\tools\arm-none-eabi-gcc\7-2017q4\arm-none-eabi\include\machine\_default_types.h
+..... packages\arduino\tools\arm-none-eabi-gcc\7-2017q4\arm-none-eabi\include\sys\features.h
 etc
 ```
 
@@ -234,7 +234,7 @@ The standard flags for compilation include the `-Os` option, which triggers opti
 
 For games, it may be useful to [optimize the compilation for speed](https://gcc.gnu.org/onlinedocs/gcc/Optimize-Options.html). To do so:
 
-- Edit the applicable `platform.txt` file, normally at `PACKAGES_PATH/gamebuino/hardware/samd/1.2.1`.
+- Edit the applicable `platform.txt` file, normally at `PACKAGES_PATH/gamebuino/hardware/samd/1.2.2`.
 - Change all occurrences of `-Os` by `-O3`
 
 If you are curious, the result of the optimization should be visible in the generated assembler code.
