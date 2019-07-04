@@ -216,7 +216,7 @@ The list of include files is displayed on the standard error stream, so if you w
 
 The output looks like this (absolute path and extra backslashes removed for readability). The indentation with dots shows the include level:
 
-```
+```text
 . packages\gamebuino\hardware\samd\1.2.2\cores\arduino/Arduino.h
 .. packages\arduino\tools\arm-none-eabi-gcc\7-2017q4\lib\gcc\arm-none-eabi\7.2.1\include\stdbool.h
 .. packages\arduino\tools\arm-none-eabi-gcc\7-2017q4\lib\gcc\arm-none-eabi\7.2.1\include\stdint.h

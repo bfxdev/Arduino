@@ -88,7 +88,6 @@
                 "${env:WIN32_APP_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
                 "${env:WIN32_APP_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
                 "${env:WIN32_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
-                "${env:WIN32_SKETCHBOOK_PATH}/libraries/FixedPoints/src",
                 "${env:WIN32_APP_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
             ],
             "browse": {

@@ -1,4 +1,4 @@
-# Visual Studio Code for Gamebuino with IntelliSense
+# Visual Studio Code for Gamebuino/Arduino with IntelliSense
 
 ## Introduction
 
@@ -17,12 +17,12 @@ So I found the problem deserves more in-depth analysis, and a decent understandi
 Here is a list of the software versions used for this tutorial. If anything changes in some future version, you may need to adapt parts of this tutorial or downgrade your installation to match exactly the setup below:
 
 - Windows 10
-- Arduino IDE 1.8.8
-- VSCode 1.32.3
-- C/C++ extension `ms-vscode.cpptools` 0.22.0
-- Arduino extension `vsciot-vscode.vscode-arduino` 0.2.25
-- Arduino SAMD Board (32-bits ARM Cortex-M0+) version 1.6.20
-- Gamebuino META Board version 1.2.1
+- Arduino IDE 1.8.9 (Windows Store 1.8.21.0)
+- VSCode 1.35.1
+- C/C++ extension `ms-vscode.cpptools` 0.24.0
+- Arduino extension `vsciot-vscode.vscode-arduino` 0.2.26
+- Arduino SAMD Board (32-bits ARM Cortex-M0+) version 1.8.1
+- Gamebuino META Board version 1.2.2
 - Gamebuino Library version 1.3.2
 
 ## Setup VSCode for sketch compilation and upload
@@ -33,17 +33,17 @@ The next sections below are similar to the [existing tutorial in french](https:/
 
 Before even thinking of using VSCode, we need a working Arduino IDE. We need it for the compiler/linker tools, not for the editor. So make sure that the Arduino IDE is properly installed (if you can upload a sketch to the Gamebuino then it should be OK).
 
-Now you need to **determine the installation folder of the Arduino IDE**. This folder is usually `C:\Program Files (x86)\Arduino` for a standard Windows installation or `/Applications/Arduino.app` under macOS. It is a user-created folder in case of portable installation (like the Gamebuino pre-cooked IDE) or installation in a user-defined folder. This is the folder where you can find the `arduino-builder` (named `arduino-builder.exe` if your OS is Windows). Please refer to [my other tutorial on the Arduino IDE](https://gamebuino.com/index.php/creations/understanding-the-arduino-ide) for more details.
+Now you need to **determine the installation folder of the Arduino IDE**. This folder is usually `C:\Program Files (x86)\Arduino` for a standard Windows installation or `/Applications/Arduino.app` under macOS. For the Windows Store installation it is at `C:\Program Files\WindowsApps\ArduinoLLC.ArduinoIDE_xxxxxxx` (where the `x` contain the version number of the Arduino Store app and some unique identifiers). It is a user-created folder in case of portable installation (like the Gamebuino pre-cooked IDE) or installation in a user-defined folder. This is the folder where you can find the `arduino-builder` (named `arduino-builder.exe` if your OS is Windows). Please refer to [my other tutorial on the Arduino IDE](https://gamebuino.com/index.php/creations/understanding-the-arduino-ide) for more details.
 
 ### Setup of Arduino extension in VSCode
 
-Now open VSCode, click on the extension icon, then enter _arduino_ in the search field. Normally, the wished extension will appear in the first hits:
+Now open VSCode, click on the extension icon, then enter _arduino_ in the search field. Normally, the wished extension will appear in the first hits (version on this screenshot is outdated):
 
 ![vsc-arduino-extension](vsc-arduino-extension.png)
 
 We use the extension created by Microsoft called `vsciot-vscode.vscode-arduino`. Click on _Install_.
 
-Please note that installing this extension triggers the installation of another extension (if not yet installed), the more general C/C++ language support extension called `ms-vscode.cpptools`. The Arduino extension relies on it:
+Please note that installing this extension triggers the installation of another extension (if not yet installed), the more general C/C++ language support extension called `ms-vscode.cpptools`. The Arduino extension relies on it (version on this screenshot is outdated):
 
 ![vsc-c-cpp-extension](vsc-c-cpp-extension.png)
 
@@ -51,11 +51,11 @@ As described on the help page of the Arduino extension, several settings can be 
 
 I recommend as well to set the `logLevel` to `verbose`. It shows the compiler and linker commands during compilation of a sketch, what may help to understand if some included files are missing in our VSCode IntelliSense settings later on.
 
-Now open the "Command palette" with <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>P</kbd> and enter "arduino", then click on _Arduino: Board Manager_. If everything was setup correctly, a list of the available/installed boards should appear (here on the right part of the window), very similar to the Board Manager in the Arduino IDE:
+Now open the "Command palette" with <kbd>Ctrl</kbd> <kbd>Shift</kbd> <kbd>P</kbd> and enter "arduino", then click on _Arduino: Board Manager_. If everything was setup correctly, a list of the available/installed boards should appear (here on the right part of the window), very similar to the Board Manager in the Arduino IDE (Gamebuino library version on this screenshot is outdated):
 
 ![Setup](vsc-arduino-setup.png)
 
-On this screenshot you can see as well the Arduino extension settings, where I entered the path to my Arduino IDE installation at `C:\Apps\arduino-1.8.8`.
+On this screenshot you can see as well the Arduino extension settings, where I entered the path to my Arduino IDE installation at `C:\Apps\arduino-1.8.9`.
 
 Now the basic setup is done, time to compile a sketch.
 
@@ -129,7 +129,7 @@ At this point, note that you can keep pre-processed and assembler files generate
 
 We can consider the configuration of the `arduino.json` completed now. As a concluding remark, we did not use the `prebuild` option in `arduino.json`. This is not necessary for now but may be interesting to integrate a pre-processing step (e.g. transform a `.png` into a `.h` header file containing its data as C array).
 
-At this point, **you may just jump directly to the conclusion**, that gives a full version of the `build.properties.json` file with instructions to adapt it to your needs. The two next main sections discuss all details to configure IntelliSense.
+At this point, **you may just jump directly to the conclusion**, that gives a full version of the `c_cpp_properties.json` file with instructions to adapt it to your needs. The two next main sections discuss all details to configure IntelliSense.
 
 ## Basic configuration of IntelliSense with the Tag Parser
 
@@ -202,11 +202,24 @@ Parameters of both engines are described in details in the [c_cpp_properties.jso
 - `defines`: Extra definition of macro values, which should reflect the exact set of `#define` lines to correctly interpret header files
 - `browse.limitSymbolsToIncludedHeaders`: Limit tag search to files included directly or indirectly from the sketch. We set it to `true` to avoid long lists of unrelated tags when using auto-completion.
 
-Finally, be aware that it is safe to delete the `c_cpp_properties.json` file. It can be re-created with default values by starting `C/C++: Edit configurations...` in the command palette (the default values will not be useable in most cases).
+Finally, be aware that it is safe to delete the `c_cpp_properties.json` file. It can be re-created with default values by starting `C/C++: Edit configurations...` (no Arduino-specific settings) or `Arduino: Board Config` in the command palette.
 
-ATTENTION: the file can be changed without any notice when adding a new library using the "Include library" button of the Library Manager or setting up a board. Absolute paths are added to the file, which may or may not be useful. Added lines in `includePath` or `forcedInclude` can be removed manually.
+ATTENTION: the file can be changed without any notice when adding a new library using the "Include library" button of the Library Manager or setting up a board. Absolute paths are added to the file, which may or may not be useful. Added lines in `includePath` or `forcedInclude` can be removed manually. Especially with version 0.2.26, the Arduino extension will push such modifications and restore them at some point (at least if you perform a new "board config"). This is extremely annoying if the `c_cpp_properties.json` file is stored in a version-controlled repository (e.g. on GitHub).
 
-### Building the c_cpp_properties.json file
+### Automatically generated c_cpp_properties.json for the Tag Parser
+
+When using `Arduino: Board Config`, the Arduino extension adds 2 Arduino-specific lines, or re-create a `c_cpp_properties.json` file with these lines, solely based on the board definition:
+
+- In `includePath`: `[packages folder]\\gamebuino\\hardware\\samd\\1.2.2\\**`
+- In `forcedInclude`: `[packages folder]\\gamebuino\\hardware\\samd\\1.2.2\\cores\\arduino\\Arduino.h`
+
+Then when using the `Arduino: Library Manager`, selection the Gamebuino META library, then clicking on _Include Library_, a line `#include <Gamebuino-Meta.h>` is added at the top of the Sketch and a line in the `c_cpp_properties.json` file, here again based solely on the definition of the library:
+
+- In `includePath`: `[sketchbook folder]\\libraries\\Gamebuino_META\\src`
+
+It is possible to use this automatically generated file with the Tag Parser. It will allow to show the definition of the functions of the Gamebuino library.
+
+### Building the c_cpp_properties.json file for the Tag Parser
 
 To make the file more generic, we will use variable substitution as described in the [VSCode variables reference](https://code.visualstudio.com/docs/editor/variables-reference). We will use the following constructs in the tutorial:
 
@@ -243,7 +256,7 @@ This is a first implementation of the file for Windows **using the Tag Parser** 
             },
 
             "forcedInclude": [
-                "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino/Arduino.h"
+                "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino/Arduino.h"
             ]
         }
     ],
@@ -287,7 +300,7 @@ Basically, we can try to add the same paths as for the Tag Parser. We an `includ
             ],
 ```
 
-After a reset of the database, we can see as well the parsing of some files, then the engine seems to be busy with some deferred action:
+After a reset of the database, we can see as well the parsing of some files, then the engine seems to be busy with some deferred action (version appearing on this screenshot is outdated):
 
 ![parsing open files](vsc-Default-parsing-open-files.png)
 
@@ -335,12 +348,12 @@ Practically:
 
 Long story short, at the end, the line should look like this:
 ```json
-            "compilerPath": "\"${env:PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -mthumb -c -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10808 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -save-temps=obj -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "compilerPath": "\"${env:PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -mthumb -c -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -save-temps=obj -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
 ```
 
 Note that we removed the include files, and simplified some defines. It is of course possible to keep them in the compiler command. The include files will be kept in the path lists `includePath` and `browse.path` for generality (and because I could not find a reliable way to escape file paths with spaces on Windows with the new version of the C/C++ extension!).
 
-Once the JSON file is changed, go to the `.ino` file, and have a look at the _Output_ pane. Normally, you should see the engine run again and display a list of include files e.g. `...\LIB\GCC\ARM-NONE-EABI\4.8.3\INCLUDE-FIXED` and the exhaustive list of defines comprising `define: __STDC__=1` or `define: __cplusplus=201103L`.
+Once the JSON file is changed, go to the `.ino` file, and have a look at the _Output_ pane. Normally, you should see the engine run again and display a list of include files e.g. `...\LIB\GCC\ARM-NONE-EABI\7.2.1\INCLUDE-FIXED` and the exhaustive list of defines comprising `define: __STDC__=1` or `define: __cplusplus=201103L`.
 
 At this point, the now known defines allow the IntelliSense engine to correctly interpret the header file:
 
@@ -358,22 +371,22 @@ Like for the defines, we can re-work the command in the verbose compilation outp
             "includePath": [
                 "${workspaceFolder}",
                 "${env:PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
-                "${env:PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.1.0/CMSIS/Device/ATMEL",
-                "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino",
-                "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/variants/gamebuino_meta",
+                "${env:PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
                 "${env:SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
-                "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/libraries/SPI"
+                "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
             ],
 
             "browse": {
                 "path": [
                     "${workspaceFolder}",
                     "${env:PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
-                    "${env:PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.1.0/CMSIS/Device/ATMEL",
-                    "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino",
-                    "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/variants/gamebuino_meta",
+                    "${env:PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                    "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                    "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
                     "${env:SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
-                    "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/libraries/SPI"
+                    "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
                     ],
                 "limitSymbolsToIncludedHeaders": true
             },
@@ -394,7 +407,7 @@ As an example, the following list of forced includes can be used for [META-Invad
 
 ```json
             "forcedInclude": [
-                "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino/Arduino.h",
+                "${env:PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino/Arduino.h",
                 "${env:SKETCHBOOK_PATH}/libraries/Gamebuino_META/src/Gamebuino-Meta.h",
                 "nonstandard.ino", "sounds.ino", "Highscore.ino", "images.ino", "specific.ino"
             ]
@@ -438,6 +451,7 @@ The complete file:
     "env": {
         "WIN32_PACKAGES_PATH": "${env:USERPROFILE}/AppData/Local/Arduino15/packages",
         "WIN32_SKETCHBOOK_PATH": "${env:USERPROFILE}/Documents/Arduino",
+        "WIN32_APP_PACKAGES_PATH": "${env:USERPROFILE}/Documents/ArduinoData/packages",
         "MAC_PACKAGES_PATH": "${env:HOME}/Library/Arduino15/packages",
         "MAC_SKETCHBOOK_PATH": "${env:HOME}/Arduino",
         "LINUX_PACKAGES_PATH": "${env:HOME}/.arduino15/packages",
@@ -451,204 +465,226 @@ The complete file:
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "\"${env:WIN32_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus   -mthumb -c -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10808 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -save-temps=obj -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "compilerPath": "\"${env:WIN32_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
             "includePath": [
                 "${workspaceFolder}",
                 "${env:WIN32_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
-                "${env:WIN32_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.1.0/CMSIS/Device/ATMEL",
-                "${env:WIN32_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino",
-                "${env:WIN32_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/variants/gamebuino_meta",
+                "${env:WIN32_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                "${env:WIN32_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                "${env:WIN32_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
                 "${env:WIN32_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
-                "${env:WIN32_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/libraries/SPI"
+                "${env:WIN32_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
             ],
             "browse": {
                 "path": [
                     "${workspaceFolder}",
                     "${env:WIN32_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
-                    "${env:WIN32_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.1.0/CMSIS/Device/ATMEL",
-                    "${env:WIN32_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino",
-                    "${env:WIN32_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/variants/gamebuino_meta",
+                    "${env:WIN32_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                    "${env:WIN32_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                    "${env:WIN32_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
                     "${env:WIN32_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
-                    "${env:WIN32_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/libraries/SPI"
+                    "${env:WIN32_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
                 ],
                 "limitSymbolsToIncludedHeaders": true
             },
             "forcedInclude": [
-                "${env:WIN32_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino/Arduino.h",
+                "${env:WIN32_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino/Arduino.h",
                 "${env:WIN32_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src/Gamebuino-Meta.h"
             ]
         },
-
         {
-            "name": "Portable-Win32",
+            "name": "Win32-Portable",
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "\"${env:PORTABLE_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus   -mthumb -c -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10808 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -save-temps=obj -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "compilerPath": "\"${env:PORTABLE_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
             "includePath": [
                 "${workspaceFolder}",
                 "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
-                "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.1.0/CMSIS/Device/ATMEL",
-                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino",
-                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/variants/gamebuino_meta",
+                "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
                 "${env:PORTABLE_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
-                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/libraries/SPI"
+                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
             ],
             "browse": {
                 "path": [
                     "${workspaceFolder}",
                     "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
-                    "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.1.0/CMSIS/Device/ATMEL",
-                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino",
-                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/variants/gamebuino_meta",
+                    "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
                     "${env:PORTABLE_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
-                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/libraries/SPI"
+                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
                 ],
                 "limitSymbolsToIncludedHeaders": true
             },
             "forcedInclude": [
-                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino/Arduino.h",
+                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino/Arduino.h",
                 "${env:PORTABLE_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src/Gamebuino-Meta.h"
             ]
         },
-
+        {
+            "name": "Win32-App",
+            "intelliSenseMode": "gcc-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++11",
+            "compilerPath": "\"${env:WIN32_APP_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "includePath": [
+                "${workspaceFolder}",
+                "${env:WIN32_APP_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
+                "${env:WIN32_APP_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                "${env:WIN32_APP_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                "${env:WIN32_APP_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
+                "${env:WIN32_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
+                "${env:WIN32_APP_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}",
+                    "${env:WIN32_APP_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
+                    "${env:WIN32_APP_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                    "${env:WIN32_APP_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                    "${env:WIN32_APP_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
+                    "${env:WIN32_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
+                    "${env:WIN32_APP_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
+                ],
+                "limitSymbolsToIncludedHeaders": true
+            },
+            "forcedInclude": [
+                "${env:WIN32_APP_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino/Arduino.h",
+                "${env:WIN32_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src/Gamebuino-Meta.h"
+            ]
+        },
         {
             "name": "Mac",
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "\"${env:MAC_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1/bin/arm-none-eabi-g++\" -mcpu=cortex-m0plus   -mthumb -c -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10808 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -save-temps=obj -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "compilerPath": "\"${env:MAC_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
             "includePath": [
                 "${workspaceFolder}",
                 "${env:MAC_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
-                "${env:MAC_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.1.0/CMSIS/Device/ATMEL",
-                "${env:MAC_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino",
-                "${env:MAC_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/variants/gamebuino_meta",
+                "${env:MAC_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                "${env:MAC_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                "${env:MAC_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
                 "${env:MAC_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
-                "${env:MAC_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/libraries/SPI"
+                "${env:MAC_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
             ],
             "browse": {
                 "path": [
                     "${workspaceFolder}",
                     "${env:MAC_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
-                    "${env:MAC_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.1.0/CMSIS/Device/ATMEL",
-                    "${env:MAC_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino",
-                    "${env:MAC_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/variants/gamebuino_meta",
+                    "${env:MAC_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                    "${env:MAC_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                    "${env:MAC_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
                     "${env:MAC_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
-                    "${env:MAC_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/libraries/SPI"
+                    "${env:MAC_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
                 ],
                 "limitSymbolsToIncludedHeaders": true
             },
             "forcedInclude": [
-                "${env:MAC_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino/Arduino.h",
+                "${env:MAC_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino/Arduino.h",
                 "${env:MAC_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src/Gamebuino-Meta.h"
             ]
         },
-
         {
-            "name": "Portable-Mac",
+            "name": "Mac-Portable",
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "\"${env:PORTABLE_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1/bin/arm-none-eabi-g++\" -mcpu=cortex-m0plus   -mthumb -c -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10808 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -save-temps=obj -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "compilerPath": "\"${env:PORTABLE_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
             "includePath": [
                 "${workspaceFolder}",
                 "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
-                "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.1.0/CMSIS/Device/ATMEL",
-                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino",
-                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/variants/gamebuino_meta",
+                "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
                 "${env:PORTABLE_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
-                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/libraries/SPI"
+                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
             ],
             "browse": {
                 "path": [
                     "${workspaceFolder}",
                     "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
-                    "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.1.0/CMSIS/Device/ATMEL",
-                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino",
-                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/variants/gamebuino_meta",
+                    "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
                     "${env:PORTABLE_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
-                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/libraries/SPI"
+                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
                 ],
                 "limitSymbolsToIncludedHeaders": true
             },
             "forcedInclude": [
-                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino/Arduino.h",
+                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino/Arduino.h",
                 "${env:PORTABLE_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src/Gamebuino-Meta.h"
             ]
         },
-
-
         {
             "name": "Linux",
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "\"${env:LINUX_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1/bin/arm-none-eabi-g++\" -mcpu=cortex-m0plus   -mthumb -c -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -save-temps=obj -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
-
+            "compilerPath": "\"${env:LINUX_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
             "includePath": [
                 "${workspaceFolder}",
                 "${env:LINUX_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
-                "${env:LINUX_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.1.0/CMSIS/Device/ATMEL",
-                "${env:LINUX_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino",
-                "${env:LINUX_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/variants/gamebuino_meta",
+                "${env:LINUX_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                "${env:LINUX_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                "${env:LINUX_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
                 "${env:LINUX_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
-                "${env:LINUX_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/libraries/SPI"
+                "${env:LINUX_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
             ],
-
             "browse": {
                 "path": [
                     "${workspaceFolder}",
                     "${env:LINUX_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
-                    "${env:LINUX_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.1.0/CMSIS/Device/ATMEL",
-                    "${env:LINUX_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino",
-                    "${env:LINUX_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/variants/gamebuino_meta",
+                    "${env:LINUX_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                    "${env:LINUX_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                    "${env:LINUX_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
                     "${env:LINUX_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
-                    "${env:LINUX_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/libraries/SPI"
+                    "${env:LINUX_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
                 ],
                 "limitSymbolsToIncludedHeaders": true
             },
             "forcedInclude": [
-                "${env:LINUX_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino/Arduino.h",
+                "${env:LINUX_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino/Arduino.h",
                 "${env:LINUX_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src/Gamebuino-Meta.h"
             ]
         },
-
         {
-            "name": "Portable-Linux",
+            "name": "Linux-Portable",
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "\"${env:PORTABLE_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/4.8.3-2014q1/bin/arm-none-eabi-g++\" -mcpu=cortex-m0plus   -mthumb -c -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10808 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -save-temps=obj -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "compilerPath": "\"${env:PORTABLE_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
             "includePath": [
                 "${workspaceFolder}",
                 "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
-                "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.1.0/CMSIS/Device/ATMEL",
-                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino",
-                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/variants/gamebuino_meta",
+                "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
                 "${env:PORTABLE_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
-                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/libraries/SPI"
+                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
             ],
             "browse": {
                 "path": [
                     "${workspaceFolder}",
                     "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
-                    "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.1.0/CMSIS/Device/ATMEL",
-                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino",
-                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/variants/gamebuino_meta",
+                    "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS-Atmel/1.2.0/CMSIS/Device/ATMEL",
+                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino",
+                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/variants/gamebuino_meta",
                     "${env:PORTABLE_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src",
-                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/libraries/SPI"
+                    "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/libraries/SPI"
                 ],
                 "limitSymbolsToIncludedHeaders": true
             },
             "forcedInclude": [
-                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.1/cores/arduino/Arduino.h",
+                "${env:PORTABLE_PACKAGES_PATH}/gamebuino/hardware/samd/1.2.2/cores/arduino/Arduino.h",
                 "${env:PORTABLE_SKETCHBOOK_PATH}/libraries/Gamebuino_META/src/Gamebuino-Meta.h"
             ]
         }
-
     ],
-
     "version": 4
 }
 ```
