@@ -347,6 +347,7 @@ Practically:
 - Before you save the changes, open the _Output_ pane and select _C/C++_ on the drop-down list to see what happens when you save the modifications. Normally you should see line like `Attempting to get defaults from compiler in ...` and no error message if if everything is correctly set up.
 
 Long story short, at the end, the line should look like this:
+
 ```json
             "compilerPath": "\"${env:PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -mthumb -c -g -Os -w -std=gnu++11 -ffunction-sections -fdata-sections -fno-threadsafe-statics -nostdlib --param max-inline-insns-single=500 -fno-rtti -fno-exceptions -MMD -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -save-temps=obj -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
 ```
@@ -561,7 +562,7 @@ The complete file:
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "\"${env:MAC_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "compilerPath": "\"${env:MAC_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
             "includePath": [
                 "${workspaceFolder}",
                 "${env:MAC_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
@@ -593,7 +594,7 @@ The complete file:
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "\"${env:PORTABLE_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "compilerPath": "\"${env:PORTABLE_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
             "includePath": [
                 "${workspaceFolder}",
                 "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
@@ -625,7 +626,7 @@ The complete file:
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "\"${env:LINUX_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "compilerPath": "\"${env:LINUX_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
             "includePath": [
                 "${workspaceFolder}",
                 "${env:LINUX_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
@@ -657,7 +658,7 @@ The complete file:
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "\"${env:PORTABLE_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "compilerPath": "\"${env:PORTABLE_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
             "includePath": [
                 "${workspaceFolder}",
                 "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",

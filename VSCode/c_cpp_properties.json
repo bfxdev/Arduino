@@ -112,7 +112,7 @@
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "\"${env:MAC_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "compilerPath": "\"${env:MAC_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
             "includePath": [
                 "${workspaceFolder}",
                 "${env:MAC_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
@@ -144,7 +144,7 @@
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "\"${env:PORTABLE_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "compilerPath": "\"${env:PORTABLE_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
             "includePath": [
                 "${workspaceFolder}",
                 "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
@@ -176,7 +176,7 @@
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "\"${env:LINUX_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "compilerPath": "\"${env:LINUX_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
             "includePath": [
                 "${workspaceFolder}",
                 "${env:LINUX_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
@@ -208,7 +208,7 @@
             "intelliSenseMode": "gcc-x64",
             "cStandard": "c11",
             "cppStandard": "c++11",
-            "compilerPath": "\"${env:PORTABLE_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++.exe\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
+            "compilerPath": "\"${env:PORTABLE_PACKAGES_PATH}/arduino/tools/arm-none-eabi-gcc/7-2017q4/bin/arm-none-eabi-g++\" -mcpu=cortex-m0plus -std=gnu++11 -D__SKETCH_NAME__ -DF_CPU=48000000L -DARDUINO=10809 -DARDUINO_SAMD_ZERO -DARDUINO_ARCH_SAMD -D__SAMD21G18A__ -DUSB_VID=0x2341 -DUSB_PID=0x804d -DUSBCON -DUSB_MANUFACTURER -DUSB_PRODUCT",
             "includePath": [
                 "${workspaceFolder}",
                 "${env:PORTABLE_PACKAGES_PATH}/arduino/tools/CMSIS/4.5.0/CMSIS/Include",
