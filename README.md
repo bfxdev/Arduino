@@ -8,6 +8,12 @@ This repository contains my contributions to the [Arduino](https://www.arduino.c
 
 This tutorial shows how to display a 256x256 picture through an optimized "affine transformation".
 
+## Affine3D: Full-screen 3D display of a tilemap
+
+![Affine3D](Affine3D/pictures/kart1-infinite-big.gif)
+
+This tutorial continues the Affine tutorial to display a picture or tilemap in 3D.
+
 ## ArduinoStructure: Understanding Arduino files and folders
 
 ![Arduino logo](ArduinoStructure/Arduino-logo.png)
